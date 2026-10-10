@@ -172,7 +172,7 @@ const RAW_CUSTOM_SENTENCES = [
   {
     "kana": "トイレはどこですか",
     "kanaSpaced": "トイレは どこですか",
-    "meaning": "화장실은 어디인가요",
+    "meaning": "화장실은 어디인가요 (は: ~은/는)",
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "doko"
@@ -188,7 +188,7 @@ const RAW_CUSTOM_SENTENCES = [
   {
     "kana": "これはどこにありますか",
     "kanaSpaced": "これは どこに ありますか",
-    "meaning": "이거 어디에 있어요",
+    "meaning": "이거 어디에 있어요 (は: ~은/는 / に: ~에)",
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "doko"
@@ -196,9 +196,33 @@ const RAW_CUSTOM_SENTENCES = [
   {
     "kana": "こんにちは",
     "kanaSpaced": "こんにちは",
-    "meaning": "안녕하세요",
+    "meaning": "안녕하세요 (は: '오늘은~' 유래 조사·발음 '와')",
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "aisatsu"
+  },
+  {
+    "kana": "これとこれください",
+    "kanaSpaced": "これと これ ください",
+    "meaning": "이거랑 이거 주세요 (と: ~와/과·and)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kore-kudasai"
+  },
+  {
+    "kana": "これとこれおねがいします",
+    "kanaSpaced": "これと これ おねがい します",
+    "meaning": "이거랑 이거 부탁합니다 (と: ~와/과·and)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kore-kudasai"
+  },
+  {
+    "kana": "これとこれをください",
+    "kanaSpaced": "これと これを ください",
+    "meaning": "이것과 이것을 주세요 (と: ~와/과·and / を: ~을/를)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kore-kudasai"
   }
 ];
