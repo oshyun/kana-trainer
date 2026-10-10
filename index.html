@@ -586,7 +586,7 @@ for (const [category, textBlock] of Object.entries(WORD_LIST_BY_CATEGORY)) {
 const ALL_SENTENCE_ITEMS = RAW_SENTENCES.map(item => {
   return {
     ...item,
-    reading: buildWordReading(item.kana, KANA_READING_TABLE),
+    reading: buildSentenceReading(item, KANA_READING_TABLE),
     acceptedAnswers: []
   };
 });
@@ -594,7 +594,7 @@ const ALL_SENTENCE_ITEMS = RAW_SENTENCES.map(item => {
 const ALL_CUSTOM_SENTENCE_ITEMS = (typeof RAW_CUSTOM_SENTENCES !== 'undefined' ? RAW_CUSTOM_SENTENCES : []).map(item => {
   return {
     ...item,
-    reading: buildWordReading(item.kana, KANA_READING_TABLE),
+    reading: buildSentenceReading(item, KANA_READING_TABLE),
     acceptedAnswers: []
   };
 });

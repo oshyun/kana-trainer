@@ -161,6 +161,69 @@ function buildWordReading(word, readingTable) {
   };
 }
 
+// 문장 → { units, romaji, hangul, romajiSpaced, hangulSpaced }. 조사 は('와/wa') 자동 보정 및 수동 오버라이드 지원.
+function buildSentenceReading(sentenceItem, readingTable) {
+  if (!sentenceItem) return null;
+
+  // 1. 객체 단위 완전 오버라이드가 제공된 경우
+  if (sentenceItem.reading && typeof sentenceItem.reading === 'object' && sentenceItem.reading.units) {
+    return sentenceItem.reading;
+  }
+
+  const rawKanaText = sentenceItem.kana || '';
+  const spacedKanaText = sentenceItem.kanaSpaced || sentenceItem.kana || '';
+  const tokens = spacedKanaText.trim().split(/[\s　]+/).filter(Boolean);
+
+  const tokenReadings = [];
+  for (const token of tokens) {
+    const units = splitWordIntoUnits(token, readingTable);
+    if (!units) return buildWordReading(rawKanaText, readingTable);
+    fillUnitReadings(units);
+
+    // 어절 끝에 위치한 조사 は 및 인사말(こんにちは, こんばんは) 발음 보정:
+    // - は母(はは)와 같은 예외 단어가 아닌 경우, 어절 맨 끝의 'は'는 조사이므로 '와 / wa'로 처리
+    const hiraganaToken = convertKatakanaToHiragana(token);
+    const lastCharacter = hiraganaToken[hiraganaToken.length - 1];
+    if (lastCharacter === 'は' && hiraganaToken !== 'はは' && units.length > 0) {
+      const lastUnit = units[units.length - 1];
+      if (convertKatakanaToHiragana(lastUnit.kana) === 'は') {
+        lastUnit.displayRomaji = 'wa';
+        lastUnit.displayHangul = '와';
+      }
+    }
+
+    tokenReadings.push({
+      units,
+      romaji: units.map(unit => unit.displayRomaji).join(''),
+      hangul: buildDisplayHangul(units),
+    });
+  }
+
+  if (tokenReadings.length === 0) {
+    return buildWordReading(rawKanaText, readingTable);
+  }
+
+  const allUnits = tokenReadings.flatMap(reading => reading.units);
+  const joinedRomaji = tokenReadings.map(reading => reading.romaji).join('');
+  const joinedHangul = tokenReadings.map(reading => reading.hangul).join('');
+  const spacedRomaji = tokenReadings.map(reading => reading.romaji).join(' ');
+  const spacedHangul = tokenReadings.map(reading => reading.hangul).join(' ');
+
+  // 2. 수동 오버라이드 필드 반영 (readingHangul / readingRomaji / readingHangulSpaced / readingRomajiSpaced)
+  const finalHangul = sentenceItem.readingHangul || joinedHangul;
+  const finalRomaji = sentenceItem.readingRomaji || joinedRomaji;
+  const finalHangulSpaced = sentenceItem.readingHangulSpaced || (sentenceItem.readingHangul ? sentenceItem.readingHangul : spacedHangul);
+  const finalRomajiSpaced = sentenceItem.readingRomajiSpaced || (sentenceItem.readingRomaji ? sentenceItem.readingRomaji : spacedRomaji);
+
+  return {
+    units: allUnits,
+    romaji: finalRomaji,
+    hangul: finalHangul,
+    romajiSpaced: finalRomajiSpaced,
+    hangulSpaced: finalHangulSpaced,
+  };
+}
+
 function matchesAllUnits(input, optionLists) {
   let positions = new Set([0]);
   for (const options of optionLists) {
