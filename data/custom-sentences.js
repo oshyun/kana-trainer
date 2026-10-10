@@ -441,17 +441,17 @@ const RAW_CUSTOM_SENTENCES = [
     "relatedGroup": "nan"
   },
   {
-    "kana": "これなんかいにありますか",
-    "kanaSpaced": "これ なんかいに ありますか",
-    "meaning": "이거 몇 층에 있어요 (に: ~에)",
+    "kana": "これなんかいですか",
+    "kanaSpaced": "これ なんかいですか",
+    "meaning": "이거 몇 층이에요 (현지에서 가장 많이 씀)",
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "kai"
   },
   {
-    "kana": "これなんかいありますか",
-    "kanaSpaced": "これ なんかい ありますか",
-    "meaning": "이거 몇 층 있어요 (조사 に 생략 구어)",
+    "kana": "これなんかいにありますか",
+    "kanaSpaced": "これ なんかいに ありますか",
+    "meaning": "이거 몇 층에 있어요 (정석 정중형·실제론 '몇 층이에요'를 더 많이 씀)",
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "kai"
