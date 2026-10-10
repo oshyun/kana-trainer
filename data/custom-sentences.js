@@ -168,5 +168,21 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "hai-iie"
+  },
+  {
+    "kana": "トイレはどこですか",
+    "kanaSpaced": "トイレは どこですか",
+    "meaning": "화장실은 어디인가요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "doko"
+  },
+  {
+    "kana": "どこですか",
+    "kanaSpaced": "どこですか",
+    "meaning": "어디인가요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "doko"
   }
 ];
