@@ -431,5 +431,13 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "kai"
+  },
+  {
+    "kana": "なに",
+    "kanaSpaced": "なに",
+    "meaning": "뭐야 / 응?",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nan"
   }
 ];
