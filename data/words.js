@@ -3,7 +3,7 @@
 // 읽기(한글·로마자 정답)는 word-reading.js 가 가나에서 자동으로 만든다.
 // 같은 단어가 여러 범주에 있으면 먼저 나온 범주만 쓴다. 한 글자 단어는 가나 통계와 겹쳐서 제외된다.
 // ─────────────────────────────────────────────────────────────
-const WORD_CATEGORY_LABELS = { n5: 'N5 기초', n4: 'N4', loan: '외래어', food: '음식·메뉴', sign: '간판·거리', travel: '여행 대화' };
+const WORD_CATEGORY_LABELS = { n5: 'N5 기초', n4: 'N4', loan: '외래어', food: '음식·메뉴', sign: '간판·거리', travel: '여행 대화', custom: '사용자 추가 문장' };
 
 const WORD_LIST_BY_CATEGORY = {
 n5: `

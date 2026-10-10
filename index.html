@@ -234,6 +234,7 @@
 <main style="width: 100%; max-width: 100%; margin: 0; padding: 0;">
   <script src="data/words.js"></script>
   <script src="data/sentences.js"></script>
+  <script src="data/custom-sentences.js"></script>
   <script src="data/word-reading.js"></script>
 
   <div style="display: flex; gap: 20px; align-items: flex-start; justify-content: center; width: 100%; flex-wrap: wrap;">
@@ -324,6 +325,19 @@
             <div class="settings-row" style="margin-top: 0;">
               <label><input type="checkbox" id="sentenceSpacingCheckbox" checked> 초보자용 띄어쓰기 모드</label>
               <label><input type="checkbox" id="underlineLoanwordsCheckbox" checked> 가타카나(외래어) 밑줄 표시</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <label class="section-toggle"><input type="checkbox" name="learningType" value="customSentence"> <b>사용자 추가 문장</b></label>
+          <div class="settings-sub hidden" id="customSentenceSubRows">
+            <div class="settings-row" style="margin-top: 0;">
+              <label><input type="checkbox" id="customSentenceSpacingCheckbox" checked> 초보자용 띄어쓰기 모드</label>
+              <label><input type="checkbox" id="customUnderlineLoanwordsCheckbox" checked> 가타카나(외래어) 밑줄 표시</label>
+            </div>
+            <div class="settings-row" style="margin-top: 4px;">
+              <span style="font-size: 12px; color: var(--muted); line-height: 1.4;">data/custom-sentences.js에서 직접 추가·관리</span>
             </div>
           </div>
         </div>
@@ -575,6 +589,14 @@ const ALL_SENTENCE_ITEMS = RAW_SENTENCES.map(item => {
   };
 });
 
+const ALL_CUSTOM_SENTENCE_ITEMS = (typeof RAW_CUSTOM_SENTENCES !== 'undefined' ? RAW_CUSTOM_SENTENCES : []).map(item => {
+  return {
+    ...item,
+    reading: buildWordReading(item.kana, KANA_READING_TABLE),
+    acceptedAnswers: []
+  };
+});
+
 // ─────────────────────────────────────────────────────────────
 // 저장소
 // - data.json 이 연결되어 있으면 그 파일이 유일한 저장 위치다 (File System Access API, Chrome/Edge).
@@ -682,6 +704,22 @@ const SETTING_DEFINITIONS = [
   {
     key: 'underlineLoanwords',
     id: 'underlineLoanwordsCheckbox',
+    type: 'booleanCheckbox',
+    defaultValue: true,
+    restartsPractice: true,
+  },
+
+  // 사용자 추가 문장 세부
+  {
+    key: 'customSentenceSpacing',
+    id: 'customSentenceSpacingCheckbox',
+    type: 'booleanCheckbox',
+    defaultValue: true,
+    restartsPractice: true,
+  },
+  {
+    key: 'customUnderlineLoanwords',
+    id: 'customUnderlineLoanwordsCheckbox',
     type: 'booleanCheckbox',
     defaultValue: true,
     restartsPractice: true,
@@ -904,9 +942,11 @@ function isWeakItem(item) {
 // 화면 표시용 가나 포매팅
 // ─────────────────────────────────────────────────────────────
 function formatDisplayKana(item, applySmallKanaClass = false) {
-  let displayHtml = (settings.sentenceSpacing && item.kanaSpaced) ? item.kanaSpaced : item.kana;
+  const isSpacingEnabled = item.category === 'custom' ? settings.customSentenceSpacing : settings.sentenceSpacing;
+  let displayHtml = (isSpacingEnabled && item.kanaSpaced) ? item.kanaSpaced : item.kana;
   
-  if (settings.underlineLoanwords && (item.type === 'word' || item.type === 'sentence')) {
+  const isUnderlineEnabled = item.category === 'custom' ? settings.customUnderlineLoanwords : settings.underlineLoanwords;
+  if (isUnderlineEnabled && (item.type === 'word' || item.type === 'sentence')) {
     // 가타카나 및 장음기호 연속 부분을 찾아서 <span>으로 감싼다
     displayHtml = displayHtml.replace(/[゠-ヿー]+/g, '<span class="loanword-underline">$&</span>');
   }
@@ -968,6 +1008,9 @@ function getItemsInSelectedRange() {
   }
   if (settings.learningTypes.includes('sentence')) {
     items = items.concat(ALL_SENTENCE_ITEMS.filter(item => !getKanaStat(item.kana).ignored));
+  }
+  if (settings.learningTypes.includes('customSentence')) {
+    items = items.concat(ALL_CUSTOM_SENTENCE_ITEMS.filter(item => !getKanaStat(item.kana).ignored));
   }
   if (settings.learningTypes.includes('kana')) {
     items = items.concat(ALL_KANA_ITEMS.filter(item =>
@@ -1286,8 +1329,9 @@ function renderReferencePanels(isCorrect, typedAnswer, typedMeaning, isReadingCo
   
   if (currentItem.type === 'word' || currentItem.type === 'sentence') {
     targetPanel.className = 'ref-panel ' + (isCorrect ? 'correct-box' : 'wrong-box');
-    const romajiAnswer = (settings.sentenceSpacing && currentItem.reading.romajiSpaced) ? currentItem.reading.romajiSpaced : currentItem.reading.romaji;
-    const hangulAnswer = (settings.sentenceSpacing && currentItem.reading.hangulSpaced) ? currentItem.reading.hangulSpaced : currentItem.reading.hangul;
+    const isSpacingEnabled = currentItem.category === 'custom' ? settings.customSentenceSpacing : settings.sentenceSpacing;
+    const romajiAnswer = (isSpacingEnabled && currentItem.reading.romajiSpaced) ? currentItem.reading.romajiSpaced : currentItem.reading.romaji;
+    const hangulAnswer = (isSpacingEnabled && currentItem.reading.hangulSpaced) ? currentItem.reading.hangulSpaced : currentItem.reading.hangul;
     
     // 오답 시 무엇을 맞췄고 틀렸는지 아이콘 추가
     const readingIcon = isCorrect ? '' : (isReadingCorrect ? '✅ ' : '❌ ');
@@ -1618,11 +1662,15 @@ function toggleSettingsRows() {
   const isKana = settings.learningTypes.includes('kana');
   const isWord = settings.learningTypes.includes('word');
   const isSentence = settings.learningTypes.includes('sentence');
+  const isCustomSentence = settings.learningTypes.includes('customSentence');
   const isWeak = settings.mode === 'weak';
 
   document.getElementById('kanaSubRows').classList.toggle('hidden', !isKana);
   document.getElementById('wordSubRows').classList.toggle('hidden', !isWord);
   document.getElementById('sentenceSubRows').classList.toggle('hidden', !isSentence);
+  if (document.getElementById('customSentenceSubRows')) {
+    document.getElementById('customSentenceSubRows').classList.toggle('hidden', !isCustomSentence);
+  }
   if (document.getElementById('weakSubRows')) {
     document.getElementById('weakSubRows').classList.toggle('hidden', !isWeak);
   }
@@ -1751,6 +1799,7 @@ function renderStatsView() {
   if (settings.learningTypes.includes('kana')) allItems = allItems.concat(ALL_KANA_ITEMS);
   if (settings.learningTypes.includes('word')) allItems = allItems.concat(ALL_WORD_ITEMS);
   if (settings.learningTypes.includes('sentence')) allItems = allItems.concat(ALL_SENTENCE_ITEMS);
+  if (settings.learningTypes.includes('customSentence')) allItems = allItems.concat(ALL_CUSTOM_SENTENCE_ITEMS);
   
   const attemptedItems = allItems.filter(item => getAttemptCount(getKanaStat(item.kana)) > 0);
   const totalCorrect = attemptedItems.reduce((sum, item) => sum + getKanaStat(item.kana).correct, 0);
@@ -1847,7 +1896,7 @@ document.getElementById('statsSortSelect').addEventListener('change', renderStat
 
 // 통계 화면의 약점 테스트: 현재 문자/범위 설정과 무관하게 학습 기록이 있는 모든 글자에서 약점을 고른다.
 document.getElementById('startWeakTestButton').addEventListener('click', () => {
-  if (settings.learningTypes.includes('word') || settings.learningTypes.includes('sentence')) {
+  if (settings.learningTypes.includes('word') || settings.learningTypes.includes('sentence') || settings.learningTypes.includes('customSentence')) {
     settings = {
       ...settings,
       wordCategories: Object.keys(WORD_CATEGORY_LABELS),
@@ -1866,7 +1915,6 @@ document.getElementById('startWeakTestButton').addEventListener('click', () => {
   switchView('practice');
   restartPractice();
 });
-
  
 document.getElementById("resetStatsButton").addEventListener("click", () => {
   if (!confirm('현재 선택된 유형(글자/단어/문장)의 통계를 모두 삭제할까요? 되돌릴 수 없습니다.')) return;
@@ -1875,6 +1923,7 @@ document.getElementById("resetStatsButton").addEventListener("click", () => {
   if (settings.learningTypes.includes('kana')) itemsToRemove = itemsToRemove.concat(ALL_KANA_ITEMS);
   if (settings.learningTypes.includes('word')) itemsToRemove = itemsToRemove.concat(ALL_WORD_ITEMS);
   if (settings.learningTypes.includes('sentence')) itemsToRemove = itemsToRemove.concat(ALL_SENTENCE_ITEMS);
+  if (settings.learningTypes.includes('customSentence')) itemsToRemove = itemsToRemove.concat(ALL_CUSTOM_SENTENCE_ITEMS);
   
   itemsToRemove.forEach(item => {
     delete statsByKana[item.kana];
