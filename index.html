@@ -1394,10 +1394,15 @@ function normalizeAnswer(rawText) {
 }
 
 function updateSessionCounterDisplay() {
-  document.getElementById('sessionCorrectText').textContent = sessionCounters.correct;
-  document.getElementById('sessionWrongText').textContent = sessionCounters.wrong;
-  document.getElementById('sessionStreakText').textContent = sessionCounters.streak;
-  document.getElementById('sessionBestStreakText').textContent = sessionCounters.bestStreak;
+  const sessionCorrectElement = document.getElementById('sessionCorrect');
+  const sessionWrongElement = document.getElementById('sessionWrong');
+  const sessionStreakElement = document.getElementById('sessionStreak');
+  const sessionBestStreakElement = document.getElementById('sessionBestStreak');
+
+  if (sessionCorrectElement) sessionCorrectElement.textContent = sessionCounters.correct;
+  if (sessionWrongElement) sessionWrongElement.textContent = sessionCounters.wrong;
+  if (sessionStreakElement) sessionStreakElement.textContent = sessionCounters.streak;
+  if (sessionBestStreakElement) sessionBestStreakElement.textContent = sessionCounters.bestStreak;
 }
 
 function getMatchedHiraItems(soundQuery) {
