@@ -247,5 +247,189 @@ const RAW_CUSTOM_SENTENCES = [
     "meaning": "이상입니다",
     "type": "sentence",
     "category": "custom"
+  },
+  {
+    "kana": "なんですか",
+    "kanaSpaced": "なんですか",
+    "meaning": "무엇인가요 / 뭔가요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nan"
+  },
+  {
+    "kana": "これはなんですか",
+    "kanaSpaced": "これは なんですか",
+    "meaning": "이것은 무엇인가요 (は: ~은/는)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nan"
+  },
+  {
+    "kana": "それはなんですか",
+    "kanaSpaced": "それは なんですか",
+    "meaning": "그것은 무엇인가요 (は: ~은/는)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nan"
+  },
+  {
+    "kana": "あれはなんですか",
+    "kanaSpaced": "あれは なんですか",
+    "meaning": "저것은 무엇인가요 (は: ~은/는)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nan"
+  },
+  {
+    "kana": "いち",
+    "kanaSpaced": "いち",
+    "meaning": "일·1",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kazu"
+  },
+  {
+    "kana": "に",
+    "kanaSpaced": "に",
+    "meaning": "이·2",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kazu"
+  },
+  {
+    "kana": "さん",
+    "kanaSpaced": "さん",
+    "meaning": "삼·3",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kazu"
+  },
+  {
+    "kana": "ひとつ",
+    "kanaSpaced": "ひとつ",
+    "meaning": "하나 (물건 1개)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kazu"
+  },
+  {
+    "kana": "ふたつ",
+    "kanaSpaced": "ふたつ",
+    "meaning": "둘 (물건 2개)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kazu"
+  },
+  {
+    "kana": "みっつ",
+    "kanaSpaced": "みっつ",
+    "meaning": "셋 (물건 3개)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kazu"
+  },
+  {
+    "kana": "ひとつください",
+    "kanaSpaced": "ひとつ ください",
+    "meaning": "하나 주세요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kazu"
+  },
+  {
+    "kana": "ふたつください",
+    "kanaSpaced": "ふたつ ください",
+    "meaning": "두 개 주세요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kazu"
+  },
+  {
+    "kana": "いっかい",
+    "kanaSpaced": "いっかい",
+    "meaning": "1층 (촉음 발음 주의)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
+  },
+  {
+    "kana": "にかい",
+    "kanaSpaced": "にかい",
+    "meaning": "2층",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
+  },
+  {
+    "kana": "さんがい",
+    "kanaSpaced": "さんがい",
+    "meaning": "3층 (탁음 'がい' 발음)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
+  },
+  {
+    "kana": "よんかい",
+    "kanaSpaced": "よんかい",
+    "meaning": "4층",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
+  },
+  {
+    "kana": "ごかい",
+    "kanaSpaced": "ごかい",
+    "meaning": "5층",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
+  },
+  {
+    "kana": "ろっかい",
+    "kanaSpaced": "ろっかい",
+    "meaning": "6층 (촉음 발음 주의)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
+  },
+  {
+    "kana": "ななかい",
+    "kanaSpaced": "ななかい",
+    "meaning": "7층",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
+  },
+  {
+    "kana": "はっかい",
+    "kanaSpaced": "はっかい",
+    "meaning": "8층 (촉음 발음 주의)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
+  },
+  {
+    "kana": "きゅうかい",
+    "kanaSpaced": "きゅうかい",
+    "meaning": "9층",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
+  },
+  {
+    "kana": "じゅっかい",
+    "kanaSpaced": "じゅっかい",
+    "meaning": "10층 (촉음 발음 주의)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
+  },
+  {
+    "kana": "なんかいですか",
+    "kanaSpaced": "なんかいですか",
+    "meaning": "몇 층인가요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
   }
 ];
