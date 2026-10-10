@@ -958,7 +958,7 @@ function isWeakItem(item) {
   let correct = stat.correct;
   let wrong = stat.wrong;
   
-  if (item.type === 'word' || item.type === 'sentence') {
+  if (item.type === 'word') {
     if (settings.wordWeakCriteria === 'reading') {
       correct = stat.readingCorrect;
       wrong = stat.readingWrong;
@@ -1571,7 +1571,7 @@ function submitAnswer() {
   answerInput.value = '';
   answerInput.placeholder = 'Enter: 다음 / 검색어 입력';
   answerMeaningInput.value = '';
-  if (isWordOrSentenceMode) answerMeaningInput.placeholder = '뜻 (참고용)';
+  if (currentItem && currentItem.type === 'word') answerMeaningInput.placeholder = '뜻 (참고용)';
   
   // 실시간으로 풀 업데이트 (정답을 맞혀 약점을 탈출한 글자가 있다면 즉시 제거)
   rebuildQuestionPool();
@@ -1600,6 +1600,7 @@ window.overrideAsCorrect = function(kana, wasReadingWrong, wasMeaningWrong) {
   persistAppData();
   renderQuizItemStat();
   updateSessionCounterDisplay();
+  rebuildQuestionPool();
   
   document.getElementById('feedbackText').className = 'feedback correct';
   document.getElementById('feedbackText').innerHTML = `정답 처리됨! <span style="font-size: 13px; font-weight: 500; margin-left: 8px; color: var(--muted);"><span style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px;"><b>Enter</b> : 다음</span></span>`;
@@ -1636,6 +1637,7 @@ window.overrideAsWrong = function(kana, wasReadingCorrect, wasMeaningCorrect) {
   persistAppData();
   renderQuizItemStat();
   updateSessionCounterDisplay();
+  rebuildQuestionPool();
   
   document.getElementById('feedbackText').className = 'feedback wrong';
   document.getElementById('feedbackText').innerHTML = `오답 처리됨! <span style="font-size: 13px; font-weight: 500; margin-left: 8px; color: var(--muted);"><span style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px;"><b>Enter</b> : 다음</span></span>`;
