@@ -240,5 +240,12 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "kore-kudasai"
+  },
+  {
+    "kana": "いじょうです",
+    "kanaSpaced": "いじょうです",
+    "meaning": "이상입니다",
+    "type": "sentence",
+    "category": "custom"
   }
 ];
