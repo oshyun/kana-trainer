@@ -40,5 +40,101 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "wakaru"
+  },
+  {
+    "kana": "あります",
+    "kanaSpaced": "あります",
+    "meaning": "있어요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "aru"
+  },
+  {
+    "kana": "ありません",
+    "kanaSpaced": "ありません",
+    "meaning": "없어요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "aru"
+  },
+  {
+    "kana": "ある",
+    "kanaSpaced": "ある",
+    "meaning": "있어",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "aru"
+  },
+  {
+    "kana": "ない",
+    "kanaSpaced": "ない",
+    "meaning": "없어",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "aru"
+  },
+  {
+    "kana": "できます",
+    "kanaSpaced": "できます",
+    "meaning": "할 수 있어요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "dekiru"
+  },
+  {
+    "kana": "できません",
+    "kanaSpaced": "できません",
+    "meaning": "못 해요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "dekiru"
+  },
+  {
+    "kana": "できる",
+    "kanaSpaced": "できる",
+    "meaning": "할 수 있어",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "dekiru"
+  },
+  {
+    "kana": "できない",
+    "kanaSpaced": "できない",
+    "meaning": "못 해",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "dekiru"
+  },
+  {
+    "kana": "いいです",
+    "kanaSpaced": "いいです",
+    "meaning": "좋아요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "ii-dame"
+  },
+  {
+    "kana": "だめです",
+    "kanaSpaced": "だめです",
+    "meaning": "안 돼요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "ii-dame"
+  },
+  {
+    "kana": "いいよ",
+    "kanaSpaced": "いいよ",
+    "meaning": "좋아",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "ii-dame"
+  },
+  {
+    "kana": "だめ",
+    "kanaSpaced": "だめ",
+    "meaning": "안 돼",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "ii-dame"
   }
 ];
