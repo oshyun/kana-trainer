@@ -232,5 +232,13 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "kore-kudasai"
+  },
+  {
+    "kana": "これとこれです",
+    "kanaSpaced": "これと これです",
+    "meaning": "이거랑 이거예요 (と: ~와/과·and / です: ~입니다·예요)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kore-kudasai"
   }
 ];
