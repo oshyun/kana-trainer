@@ -146,7 +146,7 @@ const RAW_CUSTOM_SENTENCES = [
     "relatedGroup": "onegai"
   },
   {
-    "kana": "おかいけい おねがいします",
+    "kana": "おかいけいおねがいします",
     "kanaSpaced": "おかいけい おねがい します",
     "meaning": "계산 부탁합니다",
     "type": "sentence",
