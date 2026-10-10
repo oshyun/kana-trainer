@@ -8,5 +8,37 @@ const RAW_CUSTOM_SENTENCES = [
     "meaning": "처음 뵙겠습니다",
     "type": "sentence",
     "category": "custom"
+  },
+  {
+    "kana": "わかりました",
+    "kanaSpaced": "わかりました",
+    "meaning": "알겠습니다",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "wakaru"
+  },
+  {
+    "kana": "わかりません",
+    "kanaSpaced": "わかりません",
+    "meaning": "모르겠습니다",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "wakaru"
+  },
+  {
+    "kana": "わかった",
+    "kanaSpaced": "わかった",
+    "meaning": "알았어",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "wakaru"
+  },
+  {
+    "kana": "わからない",
+    "kanaSpaced": "わからない",
+    "meaning": "몰라",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "wakaru"
   }
 ];

@@ -1345,11 +1345,43 @@ function renderReferencePanels(isCorrect, typedAnswer, typedMeaning, isReadingCo
     } else {
       overrideBtnHtml = `<div style="text-align:center; margin-top: 10px;"><button onclick="window.overrideAsWrong('${currentItem.kana}', ${isReadingCorrect}, ${isMeaningCorrect})" style="padding: 6px 12px; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">✋ 사실 뜻은 몰랐어요 (오답 처리)</button></div>`;
     }
+
+    let relatedHtml = '';
+    if (currentItem.relatedGroup) {
+      const allSentences = ALL_CUSTOM_SENTENCE_ITEMS.concat(ALL_SENTENCE_ITEMS);
+      const relatedSentenceItems = allSentences.filter(item => item.relatedGroup === currentItem.relatedGroup);
+      if (relatedSentenceItems.length > 1) {
+        const listItemsHtml = relatedSentenceItems.map(item => {
+          const isCurrent = item.kana === currentItem.kana;
+          const itemSpacingEnabled = item.category === 'custom' ? settings.customSentenceSpacing : settings.sentenceSpacing;
+          const itemHangul = (itemSpacingEnabled && item.reading && item.reading.hangulSpaced) ? item.reading.hangulSpaced : (item.reading ? item.reading.hangul : '');
+          const badgeHtml = isCurrent ? `<span style="font-size: 11px; background: var(--accent); color: white; padding: 1px 5px; border-radius: 4px; margin-left: 6px; font-weight: 600;">현재 문제</span>` : '';
+          const activeStyle = isCurrent ? 'font-weight: 700; color: var(--accent);' : 'color: var(--text);';
+          return `<li style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; padding: 5px 8px; margin-bottom: 4px; border-radius: 6px; background: rgba(0, 0, 0, 0.03); font-size: 13.5px;">
+            <div style="${activeStyle}">
+              <span>${item.kana}</span>
+              <span style="font-size: 12px; color: var(--muted); margin-left: 4px;">(${itemHangul})</span>
+              ${badgeHtml}
+              <button onclick="window.speakText('${item.kana}')" style="background:none; border:none; font-size:14px; cursor:pointer; vertical-align:middle; padding:0 2px;" title="발음 듣기">🔊</button>
+            </div>
+            <div style="color: var(--muted); font-size: 12.5px;">${item.meaning}</div>
+          </li>`;
+        }).join('');
+
+        relatedHtml = `<div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); text-align: left;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px;">💡 함께 외우는 연관 표현</div>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            ${listItemsHtml}
+          </ul>
+        </div>`;
+      }
+    }
     
     targetPanel.innerHTML = `<div class="ref-title">정답</div>
       <div style="text-align:center; padding: 10px; font-size: 16px;">
         <div style="${readingColor}">발음: ${readingIcon}<b>${hangulAnswer}</b> (${romajiAnswer}) <button onclick="window.speakText('${currentItem.kana}')" style="background:none; border:none; font-size:18px; cursor:pointer; vertical-align:middle; padding:0 4px;" title="발음 듣기">🔊</button></div>
         <div style="margin-top: 8px; ${meaningColor}">뜻: ${meaningIcon}<b>${currentItem.meaning}</b></div>
+        ${relatedHtml}
         ${overrideBtnHtml}
       </div>`;
     inputPanel.classList.add('hidden'); // 단어 모드에서는 오답 시 입력값 분석 패널 생략
