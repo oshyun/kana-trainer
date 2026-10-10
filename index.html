@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가나 암기 트레이너</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Mochiy+Pop+One&family=Zen+Kurenaido&display=swap');
+  :root {
+    --background: #f4f5f9;
+    --surface: #ffffff;
+    --text: #1f2330;
+    --muted: #6b7180;
+    --border: #dde0e8;
+    --accent: #4f6bed;
+    --correct: #1f9d55;
+    --wrong: #d64545;
+    --kana-font: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", "Noto Sans JP", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    background: var(--background);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+  .main-tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--surface); padding: 6px; border-radius: 12px; border: 1px solid var(--border); }
+  .tab-btn { flex: 1; border: none; background: transparent; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: 600; color: var(--muted); cursor: pointer; transition: 0.2s; }
+  .tab-btn.active { background: var(--accent); color: #fff; }
+  main { display: block; width: 100%; }
+  .hidden { display: none !important; }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 18px;
+  }
+  .panel.settings-panel { padding: 12px 16px; margin-bottom: 16px; }
+  .settings-row { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 16px 0 8px 0; font-size: 13.5px; }
+  .settings-row .label { font-weight: 700; color: var(--text); font-size: 14px; margin-bottom: 2px; }
+  .settings-row label { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; padding-left: 8px; }
+  .pool-size { color: var(--accent); font-size: 13px; font-weight: 600; }
+  button.secondary {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 4px 10px;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button.primary {
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button.danger {
+    border: 1px solid var(--wrong);
+    background: var(--surface);
+    color: var(--wrong);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  /* 연습 카드 */
+  .quiz-card { text-align: center; padding: 20px 20px 26px; }
+  .quiz-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .quiz-kana {
+    font-family: var(--kana-font);
+    font-size: 150px;
+    line-height: 1.15;
+    min-height: 175px;
+  }
+  .quiz-kana.empty-message { font-size: 18px; line-height: 1.6; color: var(--muted); min-height: auto; padding: 50px 0; }
+  .session-counters { display: flex; justify-content: center; gap: 24px; margin-bottom: 8px; }
+  .counter-item { text-align: center; min-width: 50px; }
+  .counter-item .val { font-size: 22px; font-weight: 700; line-height: 1.2; color: var(--text); }
+  .counter-item .val.correct { color: var(--correct); }
+  .counter-item .val.wrong { color: var(--wrong); }
+  .counter-item .lbl { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 500; }
+  .quiz-item-stat { color: var(--muted); font-size: 13px; height: 18px; }
+  #answerInput, #answerMeaningInput {
+    margin-top: 16px;
+    font-size: 24px;
+    width: 220px;
+    text-align: center;
+    padding: 10px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+  }
+  .word-inputs { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; margin-top: 16px; }
+  .word-inputs.sentence-mode { flex-direction: column; }
+  .word-inputs.sentence-mode #answerInput, .word-inputs.sentence-mode #answerMeaningInput {
+    width: 100%;
+    max-width: 450px;
+    font-size: 20px;
+  }
+  .word-inputs input { margin-top: 0 !important; }
+  #answerInput:focus, #answerMeaningInput:focus { border-color: var(--accent); }
+  #answerInput.correct, #answerMeaningInput.correct { border-color: var(--correct); }
+  #answerInput.wrong, #answerMeaningInput.wrong { border-color: var(--wrong); }
+  .feedback { margin-top: 14px; font-size: 20px; min-height: 30px; font-weight: 600; }
+  .feedback.correct { color: var(--correct); }
+  .feedback.wrong { color: var(--wrong); }
+  .hint { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .reference-area { display: flex; gap: 16px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .ref-panel { background: var(--background); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; flex: 1; max-width: 380px; }
+  .ref-panel.correct-box { background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.4); }
+  .ref-panel.wrong-box { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.4); }
+  .ref-panel.search-box { background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.4); }
+  .ref-panel.correct-box .ref-title { color: var(--correct); }
+  .ref-panel.wrong-box .ref-title { color: var(--wrong); }
+  .ref-panel.search-box .ref-title { color: var(--primary); }
+  .ref-title { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 10px; text-align: center; }
+  .font-table { width: 100%; border-collapse: collapse; text-align: center; table-layout: fixed; }
+  .font-table th { font-size: 12px; color: var(--muted); padding-bottom: 6px; font-weight: 500; }
+  .font-table td { padding: 4px 0; }
+  .font-name { font-size: 11px; color: var(--muted); }
+  .kana-cell-ref { font-size: 22px; color: var(--text); }
+  .ref-row-sep td { border-top: 1px dashed var(--border); padding-top: 10px; }
+  
+  .item-actions { display: flex; justify-content: center; gap: 8px; margin-top: 12px; margin-bottom: 20px; }
+  .item-action-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 13px; color: var(--muted); cursor: pointer; transition: 0.2s; display: none; }
+  .item-action-btn:hover { background: var(--border); }
+  .item-action-btn.star.active { color: #d97706; border-color: #fcd34d; background: #fffbeb; }
+  .item-action-btn.ignore.active { color: #dc2626; border-color: #fca5a5; background: #fef2f2; }
+  
+  .kana-cell { position: relative; }
+  .cell-btn { position: absolute; top: 4px; cursor: pointer; font-size: 15px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; color: var(--muted); user-select: none; z-index: 10; }
+  .cell-btn.ignore { left: 4px; }
+  .cell-btn.star { right: 4px; }
+  .kana-cell:hover .cell-btn { opacity: 0.3; }
+  .kana-cell:hover .cell-btn:hover { opacity: 1; }
+  .cell-btn.star.active { opacity: 1; color: #d97706; }
+  .cell-btn.ignore.active { opacity: 1; color: #dc2626; }
+  .kana-cell.dimmed { background: #f3f4f6 !important; }
+  .kana-cell.dimmed .kana, .kana-cell.dimmed .romaji, .kana-cell.dimmed .score { opacity: 0.3; }
+  .data-file-row { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .storage-error { color: var(--wrong) !important; }
+  .session-stats { display: flex; justify-content: center; gap: 28px; margin-top: 18px; font-size: 15px; }
+  .session-stats b { font-size: 18px; }
+
+  /* 통계 */
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+  .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
+  .summary-card .number { font-size: 26px; font-weight: 700; }
+  .summary-card .caption { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .stats-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .stats-toolbar .group { display: flex; gap: 12px; align-items: center; }
+  .radio-group { display: flex; gap: 12px; align-items: center; font-size: 14px; background: #fff; border: 1px solid var(--border); padding: 4px 10px; border-radius: 8px; }
+  .radio-group label { display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text); user-select: none; }
+  .radio-group input[type="radio"] { cursor: pointer; accent-color: var(--primary); width: 15px; height: 15px; margin: 0; }
+  h3.group-title { margin: 18px 0 8px; font-size: 15px; color: var(--muted); }
+  .kana-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+  .kana-cell {
+    border-radius: 8px;
+    padding: 6px 4px;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    height: 76px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+  }
+  .kana-cell .kana { font-family: var(--kana-font); font-weight: var(--kana-font-weight, normal); font-size: 26px; line-height: 1.1; }
+  .kana-cell .romaji { font-size: 11px; color: var(--muted); line-height: 1; }
+  .kana-cell .score { font-size: 11px; font-weight: 600; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.2px; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); align-items: center; }
+  .legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 4px; vertical-align: -2px; background: var(--swatch); }
+  table.weakest { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.weakest th, table.weakest td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+  table.weakest td.kana { font-family: var(--kana-font); font-weight: var(--kana-font-weight, normal); font-size: 22px; }
+  .small-kana { font-size: 0.85em; display: inline-block; transform: translateY(0.08em); margin-left: -0.15em; margin-right: -0.05em; }
+
+
+  .loanword-underline {
+    border-bottom: 2px dashed #94a3b8;
+    padding-bottom: 2px;
+  }
+
+  .settings-section {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+  .section-toggle {
+    display: inline-flex;
+    align-items: center;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .section-toggle input {
+    transform: scale(1.1);
+    margin-right: 8px;
+  }
+  .settings-sub {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-left: 8px;
+  }
+  .settings-sub.hidden {
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div id="app-wrapper" style="width: 100%; max-width: 1380px; margin: 40px 0; padding: 0 24px; display: flex; flex-direction: column;">
+<main style="width: 100%; max-width: 100%; margin: 0; padding: 0;">
+  <script src="data/words.js"></script>
+  <script src="data/sentences.js"></script>
+  <script src="data/word-reading.js"></script>
+
+  <div style="display: flex; gap: 20px; align-items: flex-start; justify-content: center; width: 100%; flex-wrap: wrap;">
+    <!-- 왼쪽 컬럼: 문제 출제에 대한 셋팅 전용 -->
+    <aside style="flex: 0 0 300px; width: 300px; display: flex; flex-direction: column; gap: 16px;">
+      <!-- SECTION 1: 출제 대상 요약 -->
+      <div class="panel" id="poolSummaryPanel" style="margin-bottom: 0; padding: 16px;">
+        <h3 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text);">📋 출제 대상</h3>
+        <div id="poolSizeText" style="font-weight: 700; font-size: 15px; color: var(--primary); text-align: center; background: rgba(59, 130, 246, 0.08); padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.15); line-height: 1.4;"></div>
+      </div>
+
+      <!-- SECTION 2: Quiz Scope -->
+      <div class="panel settings-panel" style="margin-bottom: 0; padding: 16px;">
+        <h3 style="margin: 0 0 16px 0; font-size: 15px; color: var(--text);">🎯 출제 범위</h3>
+        
+        <div class="settings-row" style="margin-top: 0;">
+          <span class="label">출제 방식</span>
+          <div style="display: flex; gap: 16px; margin-bottom: 4px; padding-left: 8px;">
+            <label style="padding-left: 0;"><input type="radio" name="mode" value="all" checked> 전체 범위</label>
+            <label style="padding-left: 0;"><input type="radio" name="mode" value="weak"> 약점 집중</label>
+          </div>
+          
+          <div id="weakSubRows" class="settings-sub hidden" style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; margin-top: 4px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <span class="label" style="font-size: 13px; font-weight: 600; color: var(--muted);">약점 기준</span>
+              <label style="padding-left: 8px;">정답률 <select id="weakThresholdSelect" style="font-size:12px; padding:2px; margin:0 4px;">
+                <option value="90">90%</option>
+                <option value="80">80%</option>
+                <option value="70">70%</option>
+                <option value="60">60%</option>
+                <option value="50">50%</option>
+              </select> 미만</label>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <span class="label" style="font-size: 13px; font-weight: 600; color: var(--muted);">미학습</span>
+              <label style="padding-left: 8px;"><input type="checkbox" id="includeRarelySeenCheckbox"> 정답 <input type="number" id="rarelySeenThresholdInput" value="3" style="width: 40px; text-align: center;"> 회 미만 항목 포함</label>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <span class="label" style="font-size: 13px; font-weight: 600; color: var(--muted);">우선순위</span>
+              <label style="padding-left: 8px;"><input type="checkbox" id="includeStarredCheckbox"> 별표(★) 항목 항상 포함</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <label class="section-toggle"><input type="checkbox" name="learningType" value="kana" checked> <b>낱글자 (가나)</b></label>
+          <div class="settings-sub" id="kanaSubRows">
+            <div class="settings-row">
+              <span class="label">문자</span>
+              <label><input type="checkbox" name="script" value="hiragana"> 히라가나</label>
+              <label><input type="checkbox" name="script" value="katakana"> 카타카나</label>
+            </div>
+            <div class="settings-row">
+              <span class="label">범위</span>
+              <label><input type="checkbox" name="group" value="basic"> 기본(청음)</label>
+              <label><input type="checkbox" name="group" value="dakuon"> 탁음</label>
+              <label><input type="checkbox" name="group" value="handakuon"> 반탁음</label>
+              <label><input type="checkbox" name="group" value="yoon"> 요음</label>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <label class="section-toggle"><input type="checkbox" name="learningType" value="word"> <b>단어</b></label>
+          <div class="settings-sub hidden" id="wordSubRows">
+            <div class="settings-row">
+              <span class="label">주제</span>
+              <label><input type="checkbox" name="wordCategory" value="n5"> N5 기초</label>
+              <label><input type="checkbox" name="wordCategory" value="n4"> N4 기초</label>
+              <label><input type="checkbox" name="wordCategory" value="loan"> 외래어</label>
+              <label><input type="checkbox" name="wordCategory" value="food"> 음식·메뉴</label>
+              <label><input type="checkbox" name="wordCategory" value="sign"> 간판·거리</label>
+              <label><input type="checkbox" name="wordCategory" value="travel"> 여행 대화</label>
+            </div>
+            <div class="settings-row" id="wordWeakCriteriaRow">
+              <span class="label">약점 기준</span>
+              <label><input type="radio" name="wordWeakCriteria" value="both" checked> 발음+뜻 종합</label>
+              <label><input type="radio" name="wordWeakCriteria" value="reading"> 발음 위주</label>
+              <label><input type="radio" name="wordWeakCriteria" value="meaning"> 뜻 위주</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <label class="section-toggle"><input type="checkbox" name="learningType" value="sentence"> <b>일상 문장</b></label>
+          <div class="settings-sub hidden" id="sentenceSubRows">
+            <div class="settings-row" style="margin-top: 0;">
+              <label><input type="checkbox" id="sentenceSpacingCheckbox" checked> 초보자용 띄어쓰기 모드</label>
+              <label><input type="checkbox" id="underlineLoanwordsCheckbox" checked> 가타카나(외래어) 밑줄 표시</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: Voice (TTS) & Fonts -->
+      <div class="panel settings-panel" style="margin-bottom: 0; padding: 16px;">
+        <h3 style="margin: 0 0 16px 0; font-size: 15px; color: var(--text);">🔊 음성(TTS) 및 글꼴</h3>
+        
+        <div class="settings-row" style="margin-top: 0;">
+          <span class="label">음성 자동 읽기</span>
+          <label><input type="checkbox" id="autoTtsBeforeCheckbox"> 출제 시 자동 읽기</label>
+          <label><input type="checkbox" id="autoTtsAfterCheckbox" checked> 정답 제출 시 자동 읽기</label>
+        </div>
+        
+        <div class="settings-row">
+          <span class="label">출제 글꼴 설정</span>
+          <div id="fontCheckboxContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+      </div>
+
+      <button id="restartButton" class="btn primary" style="width: 100%; margin-bottom: 0; font-size: 14px; padding: 12px;">출제 대상 재설정 및 시작</button>
+    </aside>
+
+    <!-- 가운데 컬럼: 문제 맞추는 곳 전용 영역 -->
+    <div style="flex: 1; min-width: 360px; max-width: 680px; display: flex; flex-direction: column; gap: 16px;">
+      <!-- 연습 화면 (문제 맞추는 곳) -->
+      <section id="practiceView" style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- 세션 카운터 -->
+        <div id="sessionCounters" class="session-counters" style="display: flex; gap: 16px; justify-content: center;">
+          <div class="counter-item"><div class="val correct" id="sessionCorrect">0</div><div class="lbl">정답</div></div>
+          <div class="counter-item"><div class="val wrong" id="sessionWrong">0</div><div class="lbl">오답</div></div>
+          <div class="counter-item"><div class="val" id="sessionStreak">0</div><div class="lbl">연속 정답</div></div>
+          <div class="counter-item"><div class="val" id="sessionBestStreak">0</div><div class="lbl">최대 연속</div></div>
+        </div>
+
+        <div id="quizCard" class="panel quiz-card">
+          <div class="quiz-container">
+            <div class="quiz-card-actions">
+              <button id="practiceStarBtn" class="item-action-btn star" title="별표">★</button>
+              <button id="practiceIgnoreBtn" class="item-action-btn ignore" title="이 글자 출제 안함">⊘</button>
+            </div>
+            <div class="quiz-kana" id="quizKana"></div>
+            <div style="text-align: center; margin-top: -15px; margin-bottom: 5px;">
+              <button id="practiceTtsBtn" class="cell-btn" style="font-size: 24px; padding: 4px 12px; border: none; background: transparent; cursor: pointer; transition: 0.2s;" title="발음 듣기">🔊</button>
+            </div>
+            <div class="quiz-item-stat" id="quizItemStat"></div>
+            
+            <div class="word-inputs">
+              <input type="text" class="quiz-input" id="answerInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="한글 또는 로마자">
+              <input type="text" class="quiz-input hidden" id="answerMeaningInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="뜻 (참고용)">
+            </div>
+            <div class="feedback" id="feedbackText"></div>
+          </div>
+        </div> <!-- end quiz-card -->
+
+        <div id="referenceArea" class="reference-area hidden">
+          <div id="inputRefPanel"></div>
+          <div id="targetRefPanel"></div>
+        </div>
+      </section>
+
+      <!-- 통계 화면 (학습 통계 탭 선택 시 노출) -->
+      <section id="statsView" class="hidden">
+        <div class="summary-grid">
+          <div class="summary-card"><div class="number" id="summaryAttempts">0</div><div class="caption">총 시도</div></div>
+          <div class="summary-card"><div class="number" id="summaryAccuracy">-</div><div class="caption">전체 정답률</div></div>
+          <div class="summary-card"><div class="number" id="summaryLearned">0</div><div class="caption">학습한(+숨긴) 글자</div></div>
+          <div class="summary-card"><div class="number" id="summaryWeak">0</div><div class="caption">약점 글자 (현재 기준 미만)</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="stats-toolbar">
+            <div class="group">
+              <div class="radio-group" id="statsScriptRadioGroup">
+                <label><input type="radio" name="statsScript" value="hiragana" checked> 히라가나</label>
+                <label><input type="radio" name="statsScript" value="katakana"> 카타카나</label>
+              </div>
+              <select id="statsSortSelect">
+                <option value="table">오십음 순</option>
+                <option value="accuracyAscending">정답률 낮은 순</option>
+              </select>
+              <select id="statsFontSelect">
+                <option value="-1">글꼴: 시스템 기본</option>
+              </select>
+            </div>
+            <div class="legend">
+              <span style="--swatch: hsl(0 75% 85%)">낮음</span>
+              <span style="--swatch: hsl(60 75% 82%)">보통</span>
+              <span style="--swatch: hsl(120 55% 82%)">높음</span>
+              <span style="--swatch: #eceef2">미학습</span>
+            </div>
+          </div>
+          <div id="statsGridContainer"></div>
+        </div>
+
+        <div class="panel">
+          <div class="stats-toolbar">
+            <h3 style="margin:0">정답률 낮은 글자 TOP 15</h3>
+            <div class="group">
+              <button class="primary" id="startWeakTestButton">약점 글자만 테스트</button>
+              <button class="danger" id="resetStatsButton">통계 초기화</button>
+            </div>
+          </div>
+          <div id="weakestListContainer"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 오른쪽 컬럼: 인터랙션 전용 사이드바 (모드 탭 전환, 데이터 연결 등) -->
+    <aside style="flex: 0 0 280px; width: 280px; display: flex; flex-direction: column; gap: 16px;">
+      <!-- 상단 컨트롤: 연습모드 / 학습통계 탭 전환 -->
+      <div class="main-tabs" style="margin-bottom: 0;">
+        <button id="navPractice" class="tab-btn active">연습 모드</button>
+        <button id="navStats" class="tab-btn">학습 통계</button>
+      </div>
+
+      <!-- 데이터 연결 섹션 -->
+      <div class="panel" id="dataFileRow" style="margin-bottom: 0; padding: 16px;">
+        <h3 style="margin: 0 0 10px 0; font-size: 15px; color: var(--text);">🔗 데이터 연결</h3>
+        <div style="font-size: 13px; margin-bottom: 12px; color: var(--muted); font-weight: 500;">
+          현재 저장 위치: <span id="storageStatusText" class="pool-size">브라우저 로컬 저장소</span>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="openDataFileButton" class="secondary" style="font-size: 12px; flex: 1; min-width: 80px;">파일 열기</button>
+          <button id="createDataFileButton" class="secondary" style="font-size: 12px; flex: 1; min-width: 80px;">새 파일</button>
+          <button id="disconnectDataFileButton" class="secondary hidden" style="font-size: 12px; width: 100%;">연결 해제</button>
+          <button id="syncDataFileButton" class="secondary hidden" style="font-size: 12px; width: 100%;">강제 동기화</button>
+        </div>
+      </div>
+
+      <!-- 재연결 권한 요청 패널 -->
+      <div id="reconnectPanel" class="panel hidden" style="text-align: center; margin-bottom: 0; padding: 16px;">
+        <h3 style="margin-top: 0; font-size: 14px;">이전에 연결된 파일이 있습니다</h3>
+        <p style="color: var(--muted); font-size: 12px; margin: 8px 0 12px 0;">브라우저 보안상 재연결 권한이 필요합니다.</p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button id="grantDataFilePermissionButton" class="primary" style="font-size: 12px;">권한 부여 및 연결</button>
+          <button id="useBrowserStorageButton" class="btn" style="font-size: 12px;">연결 취소</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// 글자 데이터 (단일 출처: 히라가나 + 허용 정답 표기 — 로마자와 한글 발음)
+// 카타카나는 유니코드 오프셋(+0x60)으로 히라가나에서 파생한다.
+// 글자를 추가하려면 해당 그룹 배열에 [히라가나, 로마자표기..., 한글발음...]을 넣으면 된다.
+// 첫 번째 표기(로마자)가 통계 화면에 보여주는 대표 표기다.
+// 무성음(か·た 등)은 거센소리(카·타)로 받는다 — 예사소리(가·다)는 탁음(が·だ)과 겹치기 때문.
+// ─────────────────────────────────────────────────────────────
+const HIRAGANA_TABLE = {
+  basic: [
+    ['あ','a','아'],['い','i','이'],['う','u','우'],['え','e','에'],['お','o','오'],
+    ['か','ka','카'],['き','ki','키'],['く','ku','쿠'],['け','ke','케'],['こ','ko','코'],
+    ['さ','sa','사'],['し','shi','si','시'],['す','su','스','수'],['せ','se','세'],['そ','so','소'],
+    ['た','ta','타'],['ち','chi','ti','치'],['つ','tsu','tu','츠','쓰'],['て','te','테'],['と','to','토'],
+    ['な','na','나'],['に','ni','니'],['ぬ','nu','누'],['ね','ne','네'],['の','no','노'],
+    ['は','ha','wa','하','와'],['ひ','hi','히'],['ふ','fu','hu','후','푸'],['へ','he','e','헤','에'],['ほ','ho','호'],
+    ['ま','ma','마'],['み','mi','미'],['む','mu','무'],['め','me','메'],['も','mo','모'],
+    ['や','ya','야'],['ゆ','yu','유'],['よ','yo','요'],
+    ['ら','ra','라'],['り','ri','리'],['る','ru','루'],['れ','re','레'],['ろ','ro','로'],
+    ['わ','wa','와'],['を','wo','o','오','워'],['ん','n','nn','응','은','ㄴ','ㅇ'],
+  ],
+  voiced: [
+    ['が','ga','가'],['ぎ','gi','기'],['ぐ','gu','구'],['げ','ge','게'],['ご','go','고'],
+    ['ざ','za','자'],['じ','ji','zi','지'],['ず','zu','즈','주'],['ぜ','ze','제'],['ぞ','zo','조'],
+    ['だ','da','다'],['ぢ','ji','di','지'],['づ','zu','du','즈','주'],['で','de','데'],['ど','do','도'],
+    ['ば','ba','바'],['び','bi','비'],['ぶ','bu','부'],['べ','be','베'],['ぼ','bo','보'],
+    ['ぱ','pa','파'],['ぴ','pi','피'],['ぷ','pu','푸'],['ぺ','pe','페'],['ぽ','po','포'],
+  ],
+  combination: [
+    ['きゃ','kya','캬'],['きゅ','kyu','큐'],['きょ','kyo','쿄'],
+    ['しゃ','sha','sya','샤'],['しゅ','shu','syu','슈'],['しょ','sho','syo','쇼'],
+    ['ちゃ','cha','tya','cya','차','챠'],['ちゅ','chu','tyu','cyu','추','츄'],['ちょ','cho','tyo','cyo','초','쵸'],
+    ['にゃ','nya','냐'],['にゅ','nyu','뉴'],['にょ','nyo','뇨'],
+    ['ひゃ','hya','햐'],['ひゅ','hyu','휴'],['ひょ','hyo','효'],
+    ['みゃ','mya','먀'],['みゅ','myu','뮤'],['みょ','myo','묘'],
+    ['りゃ','rya','랴'],['りゅ','ryu','류'],['りょ','ryo','료'],
+    ['ぎゃ','gya','갸'],['ぎゅ','gyu','규'],['ぎょ','gyo','교'],
+    ['じゃ','ja','zya','jya','자','쟈'],['じゅ','ju','zyu','jyu','주','쥬'],['じょ','jo','zyo','jyo','조','죠'],
+    ['びゃ','bya','뱌'],['びゅ','byu','뷰'],['びょ','byo','뵤'],
+    ['ぴゃ','pya','퍄'],['ぴゅ','pyu','퓨'],['ぴょ','pyo','표'],
+  ],
+};
+const GROUP_LABELS = { basic: '기본', voiced: '탁음·반탁음', combination: '요음' };
+const SCRIPT_LABELS = { hiragana: '히라가나', katakana: '카타카나' };
+const HIRAGANA_TO_KATAKANA_OFFSET = 0x60;
+
+function convertHiraganaToKatakana(hiraganaText) {
+  return [...hiraganaText]
+    .map(character => String.fromCharCode(character.charCodeAt(0) + HIRAGANA_TO_KATAKANA_OFFSET))
+    .join('');
+}
+
+const ALL_KANA_ITEMS = [];
+for (const script of ['hiragana', 'katakana']) {
+  for (const [group, rows] of Object.entries(HIRAGANA_TABLE)) {
+    for (const [hiragana, ...acceptedAnswers] of rows) {
+      ALL_KANA_ITEMS.push({
+        kana: script === 'hiragana' ? hiragana : convertHiraganaToKatakana(hiragana),
+        acceptedAnswers,
+        script,
+        group,
+      });
+    }
+  }
+}
+
+const KANA_READING_TABLE = buildKanaReadingTable(HIRAGANA_TABLE);
+const ALL_WORD_ITEMS = [];
+
+for (const [category, textBlock] of Object.entries(WORD_LIST_BY_CATEGORY)) {
+  const lines = textBlock.trim().split('\n');
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const parts = line.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      const word = parts[0];
+      const meaning = parts.slice(1).join(' ');
+      
+      // 한 글자는 가나 모드 통계와 겹칠 수 있고 단어로 연습하기엔 짧으므로 생략
+      if (word.length <= 1) continue;
+      
+      const reading = buildWordReading(word, KANA_READING_TABLE);
+      if (reading) {
+        // 이미 다른 카테고리에서 추가된 단어인지 확인
+        if (!ALL_WORD_ITEMS.some(item => item.kana === word)) {
+          ALL_WORD_ITEMS.push({
+            kana: word,
+            meaning: meaning,
+            reading: reading,
+            category: category,
+            type: 'word'
+          });
+        }
+      }
+    }
+  }
+}
+
+const ALL_SENTENCE_ITEMS = RAW_SENTENCES.map(item => {
+  return {
+    ...item,
+    reading: buildWordReading(item.kana, KANA_READING_TABLE),
+    acceptedAnswers: []
+  };
+});
+
+// ─────────────────────────────────────────────────────────────
+// 저장소
+// - data.json 이 연결되어 있으면 그 파일이 유일한 저장 위치다 (File System Access API, Chrome/Edge).
+// - 연결되어 있지 않으면 브라우저 localStorage 에 저장한다.
+// data.json 형식 (사용자가 직접 편집 가능):
+//   {
+//     "version": 1,
+//     "savedAt": "2026-10-07T07:00:00.000Z",
+//     "settings": { "scripts": [...], "groups": [...], "mode": "all"|"weak", "weakThresholdPercent": 70,
+//                   "includeRarelySeen": true, "rarelySeenThreshold": 3 },
+//     "stats": { "か": { "correct": 3, "wrong": 1, "lastSeenAt": "2026-10-07T07:00:00.000Z" }, ... }
+//   }
+//   stats 의 키는 화면에 나오는 글자 그대로(히라가나·카타카나 구분). 빠진 필드는 0으로 취급한다.
+// ─────────────────────────────────────────────────────────────
+const STATS_STORAGE_KEY = 'kanaTrainer.stats';
+const SETTINGS_STORAGE_KEY = 'kanaTrainer.settings';
+const DATA_FILE_FORMAT_VERSION = 1;
+const SETTING_DEFINITIONS = [
+  // 출제 방식 모드
+  {
+    key: 'mode',
+    selector: 'input[name="mode"]',
+    type: 'radioGroup',
+    defaultValue: 'all',
+    restartsPractice: true,
+  },
+  {
+    key: 'weakThresholdPercent',
+    id: 'weakThresholdSelect',
+    type: 'numberSelect',
+    defaultValue: 70,
+    restartsPractice: true,
+  },
+  {
+    key: 'includeRarelySeen',
+    id: 'includeRarelySeenCheckbox',
+    type: 'booleanCheckbox',
+    defaultValue: true,
+    restartsPractice: true,
+  },
+  {
+    key: 'rarelySeenThreshold',
+    id: 'rarelySeenThresholdInput',
+    type: 'numberInput',
+    defaultValue: 3,
+    restartsPractice: true,
+  },
+  {
+    key: 'includeStarred',
+    id: 'includeStarredCheckbox',
+    type: 'booleanCheckbox',
+    defaultValue: true,
+    restartsPractice: true,
+  },
+
+  // 학습 유형
+  {
+    key: 'learningTypes',
+    selector: 'input[name="learningType"]',
+    type: 'checkboxGroup',
+    defaultValue: ['kana'],
+    restartsPractice: true,
+  },
+
+  // 낱글자 세부
+  {
+    key: 'scripts',
+    selector: 'input[name="script"]',
+    type: 'checkboxGroup',
+    defaultValue: ['hiragana'],
+    restartsPractice: true,
+  },
+  {
+    key: 'groups',
+    selector: 'input[name="group"]',
+    type: 'checkboxGroup',
+    defaultValue: ['basic'],
+    restartsPractice: true,
+  },
+
+  // 단어 세부
+  {
+    key: 'wordCategories',
+    selector: 'input[name="wordCategory"]',
+    type: 'checkboxGroup',
+    defaultValue: ['n5', 'n4', 'loan', 'food', 'sign'],
+    restartsPractice: true,
+  },
+  {
+    key: 'wordWeakCriteria',
+    selector: 'input[name="wordWeakCriteria"]',
+    type: 'radioGroup',
+    defaultValue: 'both',
+    restartsPractice: true,
+  },
+
+  // 일상 문장 세부
+  {
+    key: 'sentenceSpacing',
+    id: 'sentenceSpacingCheckbox',
+    type: 'booleanCheckbox',
+    defaultValue: true,
+    restartsPractice: true,
+  },
+  {
+    key: 'underlineLoanwords',
+    id: 'underlineLoanwordsCheckbox',
+    type: 'booleanCheckbox',
+    defaultValue: true,
+    restartsPractice: true,
+  },
+
+  // 음성 (TTS)
+  {
+    key: 'autoTtsBefore',
+    id: 'autoTtsBeforeCheckbox',
+    type: 'booleanCheckbox',
+    defaultValue: false,
+    restartsPractice: false,
+  },
+  {
+    key: 'autoTtsAfter',
+    id: 'autoTtsAfterCheckbox',
+    type: 'booleanCheckbox',
+    defaultValue: true,
+    restartsPractice: false,
+  },
+
+  // 글꼴
+  {
+    key: 'activeFonts',
+    selector: '.activeFontCheckbox',
+    type: 'numberCheckboxGroup',
+    defaultValue: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    restartsPractice: true,
+  },
+  {
+    key: 'statsFont',
+    id: 'statsFontSelect',
+    type: 'numberSelect',
+    defaultValue: -1,
+    restartsPractice: false,
+    afterChange: () => renderStatsView(),
+  },
+];
+
+const DEFAULT_SETTINGS = Object.fromEntries(
+  SETTING_DEFINITIONS.map(definition => [definition.key, definition.defaultValue])
+);
+
+function sanitizeSettings(targetSettings = settings) {
+  if (targetSettings.groups && targetSettings.groups.includes('기본')) {
+    targetSettings.groups = targetSettings.groups.map(group => {
+      if (group === '기본') return 'basic';
+      if (group === '탁음') return 'dakuon';
+      if (group === '반탁음') return 'handakuon';
+      if (group === '요음') return 'yoon';
+      return group;
+    });
+  }
+
+  if (!targetSettings.learningTypes || targetSettings.learningTypes.length === 0) {
+    targetSettings.learningTypes = ['kana'];
+  }
+  if (targetSettings.learningTypes.includes('kana')) {
+    if (!targetSettings.groups || targetSettings.groups.length === 0) {
+      targetSettings.groups = ['basic'];
+    }
+    if (!targetSettings.scripts || targetSettings.scripts.length === 0) {
+      targetSettings.scripts = ['hiragana'];
+    }
+  }
+  if (targetSettings.learningTypes.includes('word')) {
+    if (!targetSettings.wordCategories || targetSettings.wordCategories.length === 0) {
+      targetSettings.wordCategories = ['n5'];
+    }
+  }
+  return targetSettings;
+}
+
+function loadJsonFromStorage(storageKey, fallbackObject) {
+  try {
+    const storedText = localStorage.getItem(storageKey);
+    return storedText ? JSON.parse(storedText) : fallbackObject;
+  } catch {
+    return fallbackObject;
+  }
+}
+function saveJsonToStorage(storageKey, objectToSave) {
+  try { localStorage.setItem(storageKey, JSON.stringify(objectToSave)); } catch { /* 저장 불가 환경: 세션 내에서만 유지 */ }
+}
+
+// statsByKana: { [kana]: { correct, wrong, lastSeenAt } }
+let statsByKana = loadJsonFromStorage(STATS_STORAGE_KEY, {});
+let settings = sanitizeSettings({ ...DEFAULT_SETTINGS, ...loadJsonFromStorage(SETTINGS_STORAGE_KEY, {}) });
+saveJsonToStorage(SETTINGS_STORAGE_KEY, settings);
+
+let connectedDataFileHandle = null;
+let lastSyncedDataFileText = null;
+let pendingDataFileWrite = Promise.resolve();
+
+function buildDataFileText() {
+  return JSON.stringify({
+    version: DATA_FILE_FORMAT_VERSION,
+    savedAt: new Date().toISOString(),
+    settings,
+    stats: statsByKana,
+  }, null, 2);
+}
+
+// 잘못된 JSON 이면 예외를 던지고 현재 데이터는 건드리지 않는다.
+function applyDataFileText(dataFileText) {
+  const parsedDocument = JSON.parse(dataFileText);
+  if (!parsedDocument || typeof parsedDocument.stats !== 'object' || Array.isArray(parsedDocument.stats)) {
+    throw new Error('"stats" 객체가 없습니다');
+  }
+  statsByKana = parsedDocument.stats;
+  const loadedSettings = parsedDocument.settings || {};
+  settings = sanitizeSettings({ ...DEFAULT_SETTINGS, ...settings, ...loadedSettings });
+  lastSyncedDataFileText = dataFileText;
+  
+  // 만약 파일에 신규 설정(폰트 등)이 누락되어 있다면 1초 뒤에 현재 설정(로컬스토리지 백업분)으로 파일을 업데이트(마이그레이션)함
+  if (!loadedSettings.activeFonts) {
+    setTimeout(persistAppData, 1000);
+  }
+}
+
+function persistAppData() {
+  saveJsonToStorage(STATS_STORAGE_KEY, statsByKana);
+  saveJsonToStorage(SETTINGS_STORAGE_KEY, settings);
+  
+  if (!connectedDataFileHandle) {
+    return;
+  }
+  const targetFileHandle = connectedDataFileHandle;
+  const dataFileText = buildDataFileText();
+  pendingDataFileWrite = pendingDataFileWrite
+    .then(async () => {
+      const writableStream = await targetFileHandle.createWritable();
+      await writableStream.write(dataFileText);
+      await writableStream.close();
+      lastSyncedDataFileText = dataFileText;
+    })
+    .catch(error => updateStorageStatus(`data.json 저장 실패: ${error.message}`));
+}
+
+function getKanaStat(kana) {
+  const storedStat = statsByKana[kana] || {};
+  return {
+    correct: Number(storedStat.correct) || 0,
+    wrong: Number(storedStat.wrong) || 0,
+    readingCorrect: Number(storedStat.readingCorrect) || 0,
+    readingWrong: Number(storedStat.readingWrong) || 0,
+    meaningCorrect: Number(storedStat.meaningCorrect) || 0,
+    meaningWrong: Number(storedStat.meaningWrong) || 0,
+    ignored: !!storedStat.ignored,
+    starred: !!storedStat.starred,
+    lastSeenAt: storedStat.lastSeenAt || null,
+  };
+}
+window.toggleKanaState = function(kana, prop, event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  const stat = getKanaStat(kana);
+  stat[prop] = !stat[prop];
+  statsByKana[kana] = stat;
+  persistAppData();
+  
+  if (!document.getElementById('statsView').classList.contains('hidden')) {
+    renderStatsView();
+  }
+  if (currentItem && currentItem.kana === kana) {
+    updatePracticeActionButtons();
+  }
+};
+function getAttemptCount(stat) {
+  return stat.correct + stat.wrong;
+}
+function getAccuracy(stat) {
+  const attemptCount = getAttemptCount(stat);
+  return attemptCount ? stat.correct / attemptCount : null;
+}
+function recordAnswer(kana, isReadingCorrect, isMeaningCorrect = isReadingCorrect) {
+  const stat = getKanaStat(kana);
+  const isOverallCorrect = isReadingCorrect && isMeaningCorrect;
+  
+  if (isOverallCorrect) stat.correct++; else stat.wrong++;
+  
+  if (isReadingCorrect) stat.readingCorrect++; else stat.readingWrong++;
+  if (isMeaningCorrect) stat.meaningCorrect++; else stat.meaningWrong++;
+  
+  stat.lastSeenAt = new Date().toISOString();
+  statsByKana[kana] = stat;
+  persistAppData();
+}
+function isWeakItem(item) {
+  const stat = getKanaStat(item.kana);
+  if (settings.includeStarred && stat.starred) return true; // 별표 항목 포함 옵션 적용
+  
+  let correct = stat.correct;
+  let wrong = stat.wrong;
+  
+  if (item.type === 'word' || item.type === 'sentence') {
+    if (settings.wordWeakCriteria === 'reading') {
+      correct = stat.readingCorrect;
+      wrong = stat.readingWrong;
+    } else if (settings.wordWeakCriteria === 'meaning') {
+      correct = stat.meaningCorrect;
+      wrong = stat.meaningWrong;
+    }
+  }
+
+  if (settings.includeRarelySeen && correct < settings.rarelySeenThreshold) return true;
+  
+  const attemptCount = correct + wrong;
+  const accuracy = attemptCount ? correct / attemptCount : null;
+  return accuracy !== null && accuracy * 100 < settings.weakThresholdPercent;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 출제 풀 & 가중 랜덤 선택
+// ─────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────
+// 화면 표시용 가나 포매팅
+// ─────────────────────────────────────────────────────────────
+function formatDisplayKana(item, applySmallKanaClass = false) {
+  let displayHtml = (settings.sentenceSpacing && item.kanaSpaced) ? item.kanaSpaced : item.kana;
+  
+  if (settings.underlineLoanwords && (item.type === 'word' || item.type === 'sentence')) {
+    // 가타카나 및 장음기호 연속 부분을 찾아서 <span>으로 감싼다
+    displayHtml = displayHtml.replace(/[゠-ヿー]+/g, '<span class="loanword-underline">$&</span>');
+  }
+  
+  if (applySmallKanaClass) {
+    const smallKanaRegex = /[ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ]/g;
+    displayHtml = displayHtml.replace(smallKanaRegex, '<span class="small-kana">$&</span>');
+  }
+  
+  return displayHtml;
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// TTS (Web Speech API)
+// ─────────────────────────────────────────────────────────────
+let preferredVoice = null;
+function initVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  const jaVoices = voices.filter(v => v.lang.includes('ja') || v.lang.includes('JP'));
+  if (jaVoices.length > 0) {
+    // 가장 자연스러운 고품질 음성을 우선적으로 찾습니다.
+    preferredVoice = 
+      jaVoices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Enhanced')) ||
+      jaVoices.find(v => v.name.includes('Kyoko') || v.name.includes('Otoya')) ||
+      jaVoices[0];
+  }
+}
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = initVoice;
+  initVoice();
+}
+
+window.speakText = function(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ja-JP';
+  if (preferredVoice) {
+    utterance.voice = preferredVoice;
+  }
+  // 억양과 자연스러움을 해치지 않도록 정상 속도(1.0)로 복구하고 피치를 살짝 조정해 부드럽게 만듭니다.
+  utterance.rate = 1.0; 
+  utterance.pitch = 1.0;
+  window.speechSynthesis.speak(utterance);
+};
+
+const RECENT_HISTORY_LENGTH = 3;
+let questionPool = [];
+let recentKanaHistory = [];
+
+function getItemsInSelectedRange() {
+  let items = [];
+  if (settings.learningTypes.includes('word')) {
+    items = items.concat(ALL_WORD_ITEMS.filter(item => 
+      settings.wordCategories.includes(item.category) &&
+      !getKanaStat(item.kana).ignored
+    ));
+  }
+  if (settings.learningTypes.includes('sentence')) {
+    items = items.concat(ALL_SENTENCE_ITEMS.filter(item => !getKanaStat(item.kana).ignored));
+  }
+  if (settings.learningTypes.includes('kana')) {
+    items = items.concat(ALL_KANA_ITEMS.filter(item =>
+      settings.scripts.includes(item.script) && 
+      settings.groups.includes(item.group) &&
+      !getKanaStat(item.kana).ignored
+    ));
+  }
+  return items;
+}
+
+// 풀을 실시간으로 업데이트하여 정답률이 기준을 넘으면 즉시 풀에서 제외되도록 한다.
+function rebuildQuestionPool() {
+  const itemsInRange = getItemsInSelectedRange();
+  questionPool = settings.mode === 'weak' ? itemsInRange.filter(isWeakItem) : itemsInRange;
+  const rarelySeenDescription = settings.includeRarelySeen ? ` + 정답 ${settings.rarelySeenThreshold}회 미만` : '';
+  const modeDescription = settings.mode === 'weak'
+    ? `약점 모드 · 정답률 ${settings.weakThresholdPercent}% 미만${rarelySeenDescription}`
+    : '전체 모드';
+  document.getElementById('poolSizeText').textContent =
+    `출제 대상: ${questionPool.length}개 (${modeDescription})`;
+}
+
+// 미학습 글자와 오답률 높은 글자에 아주 약간의 가중치만 두어 훨씬 무작위에 가깝게 만든다.
+function getSelectionWeight(item) {
+  const stat = getKanaStat(item.kana);
+  const attemptCount = getAttemptCount(stat);
+  let weight = 1.0;
+  
+  if (attemptCount === 0) {
+    weight = 1.5;
+  } else {
+    const accuracy = stat.correct / attemptCount;
+    // 정답률이 높을수록 1.0에 가깝고, 전부 오답일 경우 최대 2.0 (격차 2배)
+    weight = 1.0 + (1 - accuracy);
+  }
+  
+  // 별표(관심 항목)로 지정된 글자는 노출 빈도를 4배로 대폭 높인다.
+  if (stat.starred) {
+    weight *= 4.0;
+  }
+  
+  return weight;
+}
+
+function pickNextItem() {
+  const excludedCount = Math.min(RECENT_HISTORY_LENGTH, questionPool.length - 1);
+  const excludedKana = recentKanaHistory.slice(-excludedCount);
+  const candidates = excludedCount > 0
+    ? questionPool.filter(item => !excludedKana.includes(item.kana))
+    : questionPool;
+  const weights = candidates.map(getSelectionWeight);
+  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+  let randomPoint = Math.random() * totalWeight;
+  for (let index = 0; index < candidates.length; index++) {
+    randomPoint -= weights[index];
+    if (randomPoint <= 0) return candidates[index];
+  }
+  return candidates[candidates.length - 1];
+}
+
+// ─────────────────────────────────────────────────────────────
+// 연습 화면
+// ─────────────────────────────────────────────────────────────
+const quizKanaElement = document.getElementById('quizKana');
+const quizItemStatElement = document.getElementById('quizItemStat');
+const answerInput = document.getElementById('answerInput');
+const feedbackElement = document.getElementById('feedbackText');
+
+// 문제 글자를 매번 무작위 글꼴로 보여준다. 오프라인이라 OS에 기본 설치된 글꼴만 쓴다.
+// 각 목록은 macOS → Windows → 기타 순서의 대체 글꼴이며, 앞의 글꼴이 없으면 다음 것을 쓴다.
+// 글꼴 종류를 추가하려면 { label, fontFamily } 항목을 하나 더 넣으면 된다.
+const KANA_FONT_STYLES = [
+  { label: '고딕 (기본/웹)', fontFamily: '"Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "YuGothic", "Meiryo", "Noto Sans JP", sans-serif' },
+  { label: '명조 (인쇄/소설)', fontFamily: '"Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", "YuMincho", "MS Mincho", "Noto Serif JP", serif' },
+  { label: '둥근 고딕 (만화/자막)', fontFamily: '"Hiragino Maru Gothic ProN", "HG Maru Gothic M-PRO", "HG丸ｺﾞｼｯｸM-PRO", "TsukuBRdGothic", "M PLUS Rounded 1c", sans-serif' },
+  { label: '교과서체 (정석 필기)', fontFamily: '"Klee", "UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", "HGKyokashotai", "HG教科書体", sans-serif' },
+  { label: '해서체 (정자 붓글씨)', fontFamily: '"HGSeikaishotaiPRO", "HG正楷書体-PRO", "KouzanBrushFont", serif' },
+  { label: '행서체 (흘림 붓글씨)', fontFamily: '"HGGyoshotai", "HGSGyoshotai", "HG行書体", "Yuji Syuku", cursive' },
+  { label: '예서체 (전통/현판)', fontFamily: '"HGReishotai", "HGSReishotai", "HG隷書体", "Zen Kurenaido", fantasy' },
+  { label: '팝·캐주얼 (예능/POP)', fontFamily: '"Mochiy Pop One", "HGSoeiKakupoptai", "HG創英角ﾎﾟｯﾌﾟ体", "Yuppy TC", "Hanzipen TC", "Hannotate TC", fantasy' },
+  { label: '초폭태 간판체', fontFamily: '"Dela Gothic One", "Reggae One", "Rampart One", "Stick", "Hiragino Sans W9", "Hiragino Kaku Gothic StdN", "HGSoeikakugothicUB", "HG創英角ｺﾞｼｯｸUB", "Toppan Bunkyu Midashi Gothic", "Arial Black", fantasy', fontWeight: '900' },
+  { label: '익스트림 손글씨', fontFamily: '"Wawati SC", "Wawati TC", "HanziPen SC", "HanziPen TC", "Xingkai SC", "Yuppy SC", "Yuppy TC", "HGSoeiKakupoptai", "DFPOP1-W9", cursive' },
+  { label: 'Yuji Syuku 붓글씨', fontFamily: '"Yuji Syuku", serif' },
+];
+let currentFontStyle = KANA_FONT_STYLES[0];
+
+const statsFontSelect = document.getElementById('statsFontSelect');
+const fontCheckboxContainer = document.getElementById('fontCheckboxContainer');
+KANA_FONT_STYLES.forEach((style, index) => {
+  const option = document.createElement('option');
+  option.value = index;
+  option.textContent = style.label;
+  statsFontSelect.appendChild(option);
+  
+  const lbl = document.createElement('label');
+  let mainText = style.label;
+  let subText = "";
+  const parenMatch = style.label.match(/(.*?)\s*(\((.*?)\))/);
+  if (parenMatch) {
+    mainText = parenMatch[1].trim();
+    subText = parenMatch[2].trim();
+  } else {
+    const parts = style.label.split(' ');
+    mainText = parts[0];
+    if (parts.length > 1) {
+      subText = parts.slice(1).join(' ');
+    }
+  }
+  const subHtml = subText ? ` <span style="font-size: 12px; color: var(--muted); margin-left: 4px; font-weight: normal;">${subText}</span>` : "";
+  
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.name = 'activeFont';
+  checkbox.setAttribute('name', 'activeFont');
+  checkbox.classList.add('activeFontCheckbox');
+  checkbox.value = index;
+  
+  const span = document.createElement('span');
+  span.innerHTML = mainText + subHtml;
+  
+  lbl.appendChild(checkbox);
+  lbl.appendChild(span);
+  fontCheckboxContainer.appendChild(lbl);
+});
+
+let currentItem = null;
+let isWaitingForNext = false;
+const sessionCounters = { correct: 0, wrong: 0, streak: 0, bestStreak: 0 };
+
+function describeItemStat(item) {
+  const stat = getKanaStat(item.kana);
+  const attemptCount = getAttemptCount(stat);
+  if (attemptCount === 0) return '처음 보는 글자';
+  return `이 글자: ${stat.correct}/${attemptCount} 정답 (${Math.round(getAccuracy(stat) * 100)}%)`;
+}
+
+function showNextQuestion() {
+  isWaitingForNext = false;
+  answerInput.value = '';
+  answerInput.className = '';
+  answerInput.placeholder = '한글 또는 로마자';
+  feedbackElement.textContent = '';
+  feedbackElement.className = 'feedback';
+  document.getElementById('referenceArea').classList.add('hidden');
+
+  if (questionPool.length === 0) {
+    currentItem = null;
+    quizKanaElement.className = 'quiz-kana empty-message';
+    quizKanaElement.style.fontFamily = '';
+    quizKanaElement.style.fontSize = '';
+    quizKanaElement.style.minHeight = '';
+    quizKanaElement.style.marginBottom = '';
+    quizKanaElement.innerHTML = settings.mode === 'weak'
+      ? `정답률 ${settings.weakThresholdPercent}% 미만인 글자가 없습니다.<br>기준을 높이거나 전체 모드로 더 연습하세요.`
+      : '출제할 글자가 없습니다.<br>문자와 범위를 하나 이상 선택하세요.';
+    quizItemStatElement.textContent = '';
+    answerInput.disabled = true;
+    return;
+  }
+
+  answerInput.disabled = false;
+  const answerMeaningInput = document.getElementById('answerMeaningInput');
+  answerMeaningInput.value = '';
+  answerMeaningInput.className = '';
+  const wordInputsContainer = document.querySelector('.word-inputs');
+  currentItem = pickNextItem();
+  recentKanaHistory.push(currentItem.kana);
+  if (recentKanaHistory.length > RECENT_HISTORY_LENGTH) recentKanaHistory.shift();
+
+  if (currentItem.type === 'sentence') {
+    answerMeaningInput.classList.add('hidden');
+    answerMeaningInput.disabled = true;
+    wordInputsContainer.classList.add('sentence-mode');
+  } else if (currentItem.type === 'word') {
+    answerMeaningInput.classList.remove('hidden');
+    answerMeaningInput.disabled = false;
+    wordInputsContainer.classList.remove('sentence-mode');
+  } else {
+    answerMeaningInput.classList.add('hidden');
+    answerMeaningInput.disabled = true;
+    wordInputsContainer.classList.remove('sentence-mode');
+  }
+  
+  const activeFonts = (settings.activeFonts && settings.activeFonts.length > 0) ? settings.activeFonts : [0]; // 아무것도 선택 안 했으면 고딕(0) 기본값
+  currentFontStyle = KANA_FONT_STYLES[activeFonts[Math.floor(Math.random() * activeFonts.length)]];
+
+  quizKanaElement.className = 'quiz-kana';
+  quizKanaElement.style.fontFamily = currentFontStyle.fontFamily;
+  quizKanaElement.style.fontWeight = currentFontStyle.fontWeight || '';
+  if (currentItem.type === 'sentence' || currentItem.kana.length > 8) {
+    quizKanaElement.style.fontSize = '48px';
+  } else if (currentItem.type === 'word' && currentItem.kana.length > 3) {
+    quizKanaElement.style.fontSize = '100px';
+  } else {
+    quizKanaElement.style.fontSize = '150px';
+  }
+  quizKanaElement.innerHTML = formatDisplayKana(currentItem, true);
+  renderQuizItemStat();
+  updatePracticeActionButtons();
+  if (settings.autoTtsBefore) window.speakText(currentItem.kana);
+  answerInput.focus();
+}
+
+const practiceStarBtn = document.getElementById('practiceStarBtn');
+const practiceIgnoreBtn = document.getElementById('practiceIgnoreBtn');
+
+practiceStarBtn.addEventListener('click', () => currentItem && window.toggleKanaState(currentItem.kana, 'starred'));
+document.getElementById('practiceTtsBtn').addEventListener('click', () => { if(currentItem) window.speakText(currentItem.kana); document.getElementById('answerInput').focus(); });
+practiceIgnoreBtn.addEventListener('click', () => {
+  if (currentItem) {
+    window.toggleKanaState(currentItem.kana, 'ignored');
+    if (getKanaStat(currentItem.kana).ignored) restartPractice();
+  }
+});
+
+function updatePracticeActionButtons() {
+  if (!currentItem) {
+    practiceStarBtn.style.display = 'none';
+    practiceIgnoreBtn.style.display = 'none';
+    return;
+  }
+  practiceStarBtn.style.display = 'flex';
+  practiceIgnoreBtn.style.display = 'flex';
+  const stat = getKanaStat(currentItem.kana);
+  practiceStarBtn.className = 'item-action-btn star' + (stat.starred ? ' active' : '');
+  practiceStarBtn.innerHTML = stat.starred ? '<span>★</span> 별표됨' : '<span>☆</span> 별표';
+  practiceIgnoreBtn.className = 'item-action-btn ignore' + (stat.ignored ? ' active' : '');
+  practiceIgnoreBtn.innerHTML = stat.ignored ? '<span>⊘</span> 숨김됨' : '<span>⊘</span> 숨기기';
+}
+
+function renderQuizItemStat() {
+  quizItemStatElement.textContent = `${describeItemStat(currentItem)} · 글꼴: ${currentFontStyle.label}`;
+}
+
+function normalizeAnswer(rawText) {
+  return rawText.normalize('NFC').trim().toLowerCase().replace(/\s+/g, '');
+}
+
+function updateSessionCounterDisplay() {
+  document.getElementById('sessionCorrectText').textContent = sessionCounters.correct;
+  document.getElementById('sessionWrongText').textContent = sessionCounters.wrong;
+  document.getElementById('sessionStreakText').textContent = sessionCounters.streak;
+  document.getElementById('sessionBestStreakText').textContent = sessionCounters.bestStreak;
+}
+
+function getMatchedHiraItems(soundQuery) {
+  const foundItems = [];
+  let remaining = soundQuery.toLowerCase().replace(/\s+/g, '');
+  
+  // 히라가나 항목의 모든 정답을 길이에 따라 내림차순 정렬 (긴 발음 기호부터 우선 탐색)
+  const answerMap = [];
+  for (const item of ALL_KANA_ITEMS) {
+    if (item.script === 'hiragana') {
+      for (const ans of item.acceptedAnswers) {
+        answerMap.push({ ans: ans.toLowerCase(), item });
+      }
+    }
+  }
+  answerMap.sort((a, b) => b.ans.length - a.ans.length);
+
+  // 문자열을 앞에서부터 훑으며 일치하는 발음을 찾아 foundItems에 추가
+  while (remaining.length > 0) {
+    let matched = false;
+    for (const { ans } of answerMap) {
+      if (remaining.startsWith(ans)) {
+        // 일치하는 발음(ans)을 가진 모든 글자를 찾아 한꺼번에 추가
+        const allMatchingItems = answerMap.filter(m => m.ans === ans).map(m => m.item);
+        for (const matchedItem of allMatchingItems) {
+          if (!foundItems.some(i => i.kana === matchedItem.kana)) {
+            foundItems.push(matchedItem);
+          }
+        }
+        remaining = remaining.slice(ans.length);
+        matched = true;
+        break;
+      }
+    }
+    // 일치하는 발음이 없으면 첫 글자를 무시하고 다음으로 넘어감
+    if (!matched) {
+      remaining = remaining.slice(1);
+    }
+  }
+  return foundItems;
+}
+
+function buildRefPanelHtml(title, hiraItems) {
+  if (hiraItems.length === 0) return '';
+  let html = `<div class="ref-title">${title}</div>`;
+  html += `<table class="font-table">
+             <thead><tr><th>글꼴</th><th>히라가나</th><th>카타카나</th></tr></thead>
+             <tbody>`;
+  hiraItems.forEach((hItem, index) => {
+    const kItem = ALL_KANA_ITEMS.find(i => i.script === 'katakana' && i.kana === convertHiraganaToKatakana(hItem.kana)) || hItem;
+    KANA_FONT_STYLES.forEach((font, fIndex) => {
+      const smallKanaRegex = /[ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ]/g;
+      const formattedHira = hItem.kana.replace(smallKanaRegex, '<span class="small-kana">$&</span>');
+      const formattedKata = kItem.kana.replace(smallKanaRegex, '<span class="small-kana">$&</span>');
+      html += `<tr class="${fIndex === 0 && index > 0 ? 'ref-row-sep' : ''}">
+                 <td class="font-name">${font.label}</td>
+                 <td class="kana-cell-ref" style="font-family: ${font.fontFamily.replace(/"/g, '&quot;')}; font-weight: ${font.fontWeight || 'normal'};">${formattedHira}</td>
+                 <td class="kana-cell-ref" style="font-family: ${font.fontFamily.replace(/"/g, '&quot;')}; font-weight: ${font.fontWeight || 'normal'};">${formattedKata}</td>
+               </tr>`;
+    });
+  });
+  html += `</tbody></table>`;
+  return html;
+}
+
+function renderReferencePanels(isCorrect, typedAnswer, typedMeaning, isReadingCorrect = isCorrect, isMeaningCorrect = isCorrect) {
+  const refArea = document.getElementById('referenceArea');
+  const targetPanel = document.getElementById('targetRefPanel');
+  const inputPanel = document.getElementById('inputRefPanel');
+  
+  refArea.classList.remove('hidden');
+  
+  if (currentItem.type === 'word' || currentItem.type === 'sentence') {
+    targetPanel.className = 'ref-panel ' + (isCorrect ? 'correct-box' : 'wrong-box');
+    const romajiAnswer = (settings.sentenceSpacing && currentItem.reading.romajiSpaced) ? currentItem.reading.romajiSpaced : currentItem.reading.romaji;
+    const hangulAnswer = (settings.sentenceSpacing && currentItem.reading.hangulSpaced) ? currentItem.reading.hangulSpaced : currentItem.reading.hangul;
+    
+    // 오답 시 무엇을 맞췄고 틀렸는지 아이콘 추가
+    const readingIcon = isCorrect ? '' : (isReadingCorrect ? '✅ ' : '❌ ');
+    const meaningIcon = isCorrect || currentItem.type === 'sentence' ? '' : (isMeaningCorrect ? '✅ ' : '❌ ');
+    const readingColor = (!isCorrect && !isReadingCorrect) ? 'color: var(--wrong);' : '';
+    const meaningColor = (!isCorrect && !isMeaningCorrect) ? 'color: var(--wrong);' : '';
+    
+    let overrideBtnHtml = '';
+    if (!isCorrect) {
+      overrideBtnHtml = `<div style="text-align:center; margin-top: 10px;"><button onclick="window.overrideAsCorrect('${currentItem.kana}', ${!isReadingCorrect}, ${!isMeaningCorrect})" style="padding: 6px 12px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">✋ 맞게 썼는데 틀렸다고 나와요 (정답 처리)</button></div>`;
+    } else {
+      overrideBtnHtml = `<div style="text-align:center; margin-top: 10px;"><button onclick="window.overrideAsWrong('${currentItem.kana}', ${isReadingCorrect}, ${isMeaningCorrect})" style="padding: 6px 12px; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">✋ 사실 뜻은 몰랐어요 (오답 처리)</button></div>`;
+    }
+    
+    targetPanel.innerHTML = `<div class="ref-title">정답</div>
+      <div style="text-align:center; padding: 10px; font-size: 16px;">
+        <div style="${readingColor}">발음: ${readingIcon}<b>${hangulAnswer}</b> (${romajiAnswer}) <button onclick="window.speakText('${currentItem.kana}')" style="background:none; border:none; font-size:18px; cursor:pointer; vertical-align:middle; padding:0 4px;" title="발음 듣기">🔊</button></div>
+        <div style="margin-top: 8px; ${meaningColor}">뜻: ${meaningIcon}<b>${currentItem.meaning}</b></div>
+        ${overrideBtnHtml}
+      </div>`;
+    inputPanel.classList.add('hidden'); // 단어 모드에서는 오답 시 입력값 분석 패널 생략
+    return;
+  }
+  
+  // 정답(target)은 현재 출제된 글자 하나만 확정적으로 보여준다.
+  let targetHiraItem = currentItem;
+  if (currentItem.script === 'katakana') {
+    targetHiraItem = ALL_KANA_ITEMS.find(i => i.script === 'hiragana' && convertHiraganaToKatakana(i.kana) === currentItem.kana) || currentItem;
+  }
+  const targetHiraItems = [targetHiraItem];
+  const targetTitle = `정답: ${currentItem.acceptedAnswers.join(' / ')}`;
+  targetPanel.className = 'ref-panel correct-box';
+  
+  let overrideBtnHtmlKana = '';
+  if (!isCorrect) {
+    overrideBtnHtmlKana = `<div style="text-align:center; margin-top: 10px;"><button onclick="window.overrideAsCorrect('${currentItem.kana}', true, true)" style="padding: 6px 12px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">✋ 정답 처리</button></div>`;
+  }
+  targetPanel.innerHTML = buildRefPanelHtml(targetTitle, targetHiraItems) + overrideBtnHtmlKana;
+  
+  if (!isCorrect && typedAnswer) {
+    const inputHiraItems = getMatchedHiraItems(typedAnswer);
+    inputPanel.className = 'ref-panel wrong-box';
+    if (inputHiraItems.length > 0) {
+      const inputTitle = `입력값: ${typedAnswer}`;
+      inputPanel.innerHTML = buildRefPanelHtml(inputTitle, inputHiraItems);
+      inputPanel.classList.remove('hidden');
+    } else {
+      inputPanel.innerHTML = `<div class="ref-title">입력값: ${typedAnswer}</div><div style="text-align:center; padding: 20px; color: var(--wrong); font-size: 13px;">해당하는 글자가<br>없습니다</div>`;
+      inputPanel.classList.remove('hidden');
+    }
+  } else {
+    inputPanel.classList.add('hidden');
+  }
+}
+
+function submitAnswer() {
+  if (!currentItem) return;
+
+  const rawAnswer = answerInput.value.trim();
+  const typedAnswer = normalizeAnswer(rawAnswer);
+  const answerMeaningInput = document.getElementById('answerMeaningInput');
+  const rawMeaning = answerMeaningInput.value.trim();
+  const typedMeaning = normalizeAnswer(rawMeaning);
+
+  if (isWaitingForNext) {
+    if (!typedAnswer) {
+      showNextQuestion();
+    } else {
+      const inputPanel = document.getElementById('inputRefPanel');
+      const inputHiraItems = getMatchedHiraItems(typedAnswer);
+      
+      inputPanel.className = 'ref-panel search-box';
+      if (inputHiraItems.length > 0) {
+        inputPanel.innerHTML = buildRefPanelHtml(`검색: ${typedAnswer}`, inputHiraItems);
+      } else {
+        inputPanel.innerHTML = `<div class="ref-title">검색: ${typedAnswer}</div><div style="text-align:center; padding: 20px; color: var(--wrong); font-size: 13px;">해당하는 글자가<br>없습니다</div>`;
+      }
+      inputPanel.classList.remove('hidden');
+      answerInput.value = '';
+    }
+    return;
+  }
+
+  if (currentItem.type === 'word') {
+    if (!typedAnswer || !typedMeaning) return;
+  } else {
+    if (!typedAnswer) return;
+  }
+
+  let isCorrect = false;
+  let isReadingCorrect = false;
+  let isMeaningCorrect = false;
+
+  if (currentItem.type === 'word') {
+    isReadingCorrect = isWordReadingCorrect(currentItem.reading, typedAnswer);
+    const meaningOptions = currentItem.meaning.split(/[·,/\s]+/).map(normalizeAnswer).filter(Boolean);
+    isMeaningCorrect = meaningOptions.some(m => m === typedMeaning || typedMeaning.includes(m));
+    isCorrect = isReadingCorrect && isMeaningCorrect;
+    recordAnswer(currentItem.kana, isReadingCorrect, isMeaningCorrect);
+  } else if (currentItem.type === 'sentence') {
+    isReadingCorrect = isWordReadingCorrect(currentItem.reading, typedAnswer);
+    isMeaningCorrect = true;
+    isCorrect = isReadingCorrect;
+    recordAnswer(currentItem.kana, isReadingCorrect, isMeaningCorrect);
+  } else {
+    isCorrect = currentItem.acceptedAnswers.includes(typedAnswer);
+    isReadingCorrect = isCorrect;
+    isMeaningCorrect = isCorrect;
+    recordAnswer(currentItem.kana, isCorrect);
+  }
+  
+  renderQuizItemStat();
+  
+  if (settings.autoTtsAfter) window.speakText(currentItem.kana);
+
+  isWaitingForNext = true;
+
+  const hintHtml = `<div style="font-size: 13px; font-weight: 500; margin-top: 10px; color: var(--muted);"><span style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; margin-right: 8px;">빈칸 <b>Enter</b> : 다음</span><span style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px;">입력 후 <b>Enter</b> : 검색</span></div>`;
+
+  if (isCorrect) {
+    sessionCounters.correct++;
+    sessionCounters.streak++;
+    sessionCounters.bestStreak = Math.max(sessionCounters.bestStreak, sessionCounters.streak);
+    answerInput.className = 'correct';
+    if (currentItem.type === 'word') answerMeaningInput.className = 'correct';
+    feedbackElement.className = 'feedback correct';
+    const typedStr = rawMeaning ? `${rawAnswer} / ${rawMeaning}` : rawAnswer;
+    feedbackElement.innerHTML = `정답! <span style="font-size: 15px; color: var(--muted); margin-left: 10px; font-weight: normal;">(내가 쓴 답: ${typedStr})</span>${hintHtml}`;
+    renderReferencePanels(true, rawAnswer, rawMeaning);
+  } else {
+    sessionCounters.wrong++;
+    sessionCounters.streak = 0;
+
+    if (currentItem.type === 'word') {
+      answerInput.className = isReadingCorrect ? 'correct' : 'wrong';
+      answerMeaningInput.className = isMeaningCorrect ? 'correct' : 'wrong';
+      
+      feedbackElement.className = 'feedback wrong';
+      const typedStr = rawMeaning ? `${rawAnswer} / ${rawMeaning}` : rawAnswer;
+      if (isReadingCorrect && !isMeaningCorrect) {
+        feedbackElement.style.color = '#d97706'; // 주황색
+        feedbackElement.innerHTML = `발음은 맞았지만, 뜻이 틀렸어요! <span style="font-size: 15px; margin-left: 10px; font-weight: normal; opacity: 0.8;">(내가 쓴 답: ${typedStr})</span>${hintHtml}`;
+      } else if (!isReadingCorrect && isMeaningCorrect) {
+        feedbackElement.style.color = '#d97706';
+        feedbackElement.innerHTML = `뜻은 맞았지만, 발음이 틀렸어요! <span style="font-size: 15px; margin-left: 10px; font-weight: normal; opacity: 0.8;">(내가 쓴 답: ${typedStr})</span>${hintHtml}`;
+      } else {
+        feedbackElement.style.color = 'var(--wrong)';
+        feedbackElement.innerHTML = `오답 <span style="font-size: 15px; color: var(--muted); margin-left: 10px; font-weight: normal;">(내가 쓴 답: ${typedStr})</span>${hintHtml}`;
+      }
+    } else {
+      answerInput.className = 'wrong';
+      feedbackElement.className = 'feedback wrong';
+      feedbackElement.style.color = 'var(--wrong)';
+      const typedStr = rawMeaning ? `${rawAnswer} / ${rawMeaning}` : rawAnswer;
+      feedbackElement.innerHTML = `오답 <span style="font-size: 15px; color: var(--muted); margin-left: 10px; font-weight: normal;">(내가 쓴 답: ${typedStr})</span>${hintHtml}`;
+    }
+    
+    renderReferencePanels(false, typedAnswer, typedMeaning, isReadingCorrect, isMeaningCorrect);
+  }
+  
+  // 다음 단계로 넘어가거나 검색할 수 있도록 입력창 비우고 힌트 표시
+  answerInput.value = '';
+  answerInput.placeholder = 'Enter: 다음 / 검색어 입력';
+  answerMeaningInput.value = '';
+  if (isWordOrSentenceMode) answerMeaningInput.placeholder = '뜻 (참고용)';
+  
+  // 실시간으로 풀 업데이트 (정답을 맞혀 약점을 탈출한 글자가 있다면 즉시 제거)
+  rebuildQuestionPool();
+  
+  updateSessionCounterDisplay();
+}
+
+// QUIRK(korean-ime-enter): 한글 조합 중 Enter는 브라우저마다 다르게 온다.
+//   Chrome은 조합용 keydown(isComposing) + 일반 Enter keydown 두 번, 일부 환경은 조합용 한 번만 보낸다.
+//   조합용 Enter는 보류했다가 compositionend 직후 일반 Enter가 안 오면 그때 제출해 정확히 한 번만 제출한다.
+window.overrideAsCorrect = function(kana, wasReadingWrong, wasMeaningWrong) {
+  const stat = getKanaStat(kana);
+  const isWordOrSentence = currentItem.type === 'word' || currentItem.type === 'sentence';
+  
+  if (isWordOrSentence) {
+    if (wasReadingWrong) { stat.readingWrong = Math.max(0, stat.readingWrong - 1); stat.readingCorrect++; }
+    if (wasMeaningWrong) { stat.meaningWrong = Math.max(0, stat.meaningWrong - 1); stat.meaningCorrect++; }
+  }
+  
+  stat.wrong = Math.max(0, stat.wrong - 1);
+  stat.correct++;
+  
+  sessionCounters.wrong = Math.max(0, sessionCounters.wrong - 1);
+  sessionCounters.correct++;
+  
+  persistAppData();
+  renderQuizItemStat();
+  updateSessionCounterDisplay();
+  
+  document.getElementById('feedbackText').className = 'feedback correct';
+  document.getElementById('feedbackText').innerHTML = `정답 처리됨! <span style="font-size: 13px; font-weight: 500; margin-left: 8px; color: var(--muted);"><span style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px;"><b>Enter</b> : 다음</span></span>`;
+  document.getElementById('answerInput').className = 'correct';
+  if (currentItem.type === 'word') document.getElementById('answerMeaningInput').className = 'correct';
+  
+  const targetPanel = document.getElementById('targetRefPanel');
+  if (targetPanel) {
+    targetPanel.className = 'ref-panel correct-box';
+    const btnHtml = `<div style="text-align:center; margin-top: 10px;"><button`;
+    targetPanel.innerHTML = targetPanel.innerHTML.split(btnHtml)[0]; // 버튼 제거
+  }
+};
+
+// QUIRK-REMOVE-WHEN: 주요 브라우저가 IME Enter 이벤트를 동일하게 보낼 때
+
+window.overrideAsWrong = function(kana, wasReadingCorrect, wasMeaningCorrect) {
+  const stat = getKanaStat(kana);
+  const isWordOrSentence = currentItem.type === 'word' || currentItem.type === 'sentence';
+  
+  if (isWordOrSentence) {
+    if (wasReadingCorrect) { stat.readingCorrect = Math.max(0, stat.readingCorrect - 1); stat.readingWrong++; }
+    if (wasMeaningCorrect) { stat.meaningCorrect = Math.max(0, stat.meaningCorrect - 1); stat.meaningWrong++; }
+  }
+  
+  stat.correct = Math.max(0, stat.correct - 1);
+  stat.wrong++;
+  
+  sessionCounters.correct = Math.max(0, sessionCounters.correct - 1);
+  sessionCounters.wrong++;
+  sessionCounters.streak = 0;
+  
+  persistAppData();
+  renderQuizItemStat();
+  updateSessionCounterDisplay();
+  
+  document.getElementById('feedbackText').className = 'feedback wrong';
+  document.getElementById('feedbackText').innerHTML = `오답 처리됨! <span style="font-size: 13px; font-weight: 500; margin-left: 8px; color: var(--muted);"><span style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px;"><b>Enter</b> : 다음</span></span>`;
+  document.getElementById('answerInput').className = 'wrong';
+  if (currentItem.type === 'word') document.getElementById('answerMeaningInput').className = 'wrong';
+  
+  const targetPanel = document.getElementById('targetRefPanel');
+  if (targetPanel) {
+    targetPanel.className = 'ref-panel wrong-box';
+    const btnHtml = `<div style="text-align:center; margin-top: 10px;"><button`;
+    targetPanel.innerHTML = targetPanel.innerHTML.split(btnHtml)[0]; // 버튼 제거
+  }
+};
+
+const COMPOSITION_SUBMIT_DELAY_MILLISECONDS = 30;
+let isSubmitPendingAfterComposition = false;
+
+[document.getElementById('answerInput'), document.getElementById('answerMeaningInput')].forEach(input => {
+  input.addEventListener('keydown', event => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    
+    // 단어 모드에서 빈칸이 남아있으면 다른 쪽 입력칸으로 포커스 이동 (대기 상태가 아닐 때만)
+    if (!isWaitingForNext && currentItem && currentItem.type === 'word') {
+      const otherInput = input.id === 'answerInput' ? document.getElementById('answerMeaningInput') : document.getElementById('answerInput');
+      if (!input.value.trim() && !otherInput.value.trim()) {
+        // 둘 다 비어있으면 다음 퀴즈 진행할 수 없음 (무시)
+      } else if (!input.value.trim() && otherInput.value.trim()) {
+         return; // 자기가 비어있으면 입력 안됨
+      } else if (input.value.trim() && !otherInput.value.trim()) {
+        otherInput.focus();
+        return;
+      }
+    }
+
+    if (event.isComposing) { isSubmitPendingAfterComposition = true; return; }
+    isSubmitPendingAfterComposition = false;
+    submitAnswer();
+  });
+  input.addEventListener('compositionend', () => {
+    if (!isSubmitPendingAfterComposition) return;
+    setTimeout(() => {
+      if (!isSubmitPendingAfterComposition) return;
+      isSubmitPendingAfterComposition = false;
+      submitAnswer();
+    }, COMPOSITION_SUBMIT_DELAY_MILLISECONDS);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// 설정 UI 동기화 및 이벤트 처리
+// ─────────────────────────────────────────────────────────────
+function applySettingsToControls() {
+  sanitizeSettings();
+
+  SETTING_DEFINITIONS.forEach(definition => {
+    const settingValue = settings[definition.key];
+    switch (definition.type) {
+      case 'booleanCheckbox': {
+        const checkbox = document.getElementById(definition.id);
+        if (checkbox) checkbox.checked = Boolean(settingValue);
+        break;
+      }
+      case 'radioGroup': {
+        document.querySelectorAll(definition.selector).forEach(radio => {
+          radio.checked = radio.value === settingValue;
+        });
+        break;
+      }
+      case 'checkboxGroup': {
+        const checkedValues = Array.isArray(settingValue) ? settingValue : [];
+        document.querySelectorAll(definition.selector).forEach(checkbox => {
+          checkbox.checked = checkedValues.includes(checkbox.value);
+        });
+        break;
+      }
+      case 'numberCheckboxGroup': {
+        const checkedNumbers = Array.isArray(settingValue) ? settingValue : [];
+        document.querySelectorAll(definition.selector).forEach(checkbox => {
+          checkbox.checked = checkedNumbers.includes(Number(checkbox.value));
+        });
+        break;
+      }
+      case 'numberSelect':
+      case 'numberInput': {
+        const control = document.getElementById(definition.id);
+        if (control && settingValue !== undefined) {
+          control.value = String(settingValue);
+        }
+        break;
+      }
+    }
+  });
+
+  toggleSettingsRows();
+}
+
+function toggleSettingsRows() {
+  const isKana = settings.learningTypes.includes('kana');
+  const isWord = settings.learningTypes.includes('word');
+  const isSentence = settings.learningTypes.includes('sentence');
+  const isWeak = settings.mode === 'weak';
+
+  document.getElementById('kanaSubRows').classList.toggle('hidden', !isKana);
+  document.getElementById('wordSubRows').classList.toggle('hidden', !isWord);
+  document.getElementById('sentenceSubRows').classList.toggle('hidden', !isSentence);
+  if (document.getElementById('weakSubRows')) {
+    document.getElementById('weakSubRows').classList.toggle('hidden', !isWeak);
+  }
+
+  const showWeakCriteria = isWord && isWeak;
+  document.getElementById('wordWeakCriteriaRow').classList.toggle('hidden', !showWeakCriteria);
+}
+
+function readSettingsFromControls() {
+  const nextSettings = { ...settings };
+
+  SETTING_DEFINITIONS.forEach(definition => {
+    switch (definition.type) {
+      case 'booleanCheckbox': {
+        const checkbox = document.getElementById(definition.id);
+        nextSettings[definition.key] = checkbox ? checkbox.checked : definition.defaultValue;
+        break;
+      }
+      case 'radioGroup': {
+        const checkedRadio = document.querySelector(`${definition.selector}:checked`);
+        nextSettings[definition.key] = checkedRadio ? checkedRadio.value : definition.defaultValue;
+        break;
+      }
+      case 'checkboxGroup': {
+        nextSettings[definition.key] = [...document.querySelectorAll(`${definition.selector}:checked`)]
+          .map(checkbox => checkbox.value);
+        break;
+      }
+      case 'numberCheckboxGroup': {
+        nextSettings[definition.key] = [...document.querySelectorAll(`${definition.selector}:checked`)]
+          .map(checkbox => Number(checkbox.value));
+        break;
+      }
+      case 'numberSelect':
+      case 'numberInput': {
+        const control = document.getElementById(definition.id);
+        const parsedNumber = control ? Number(control.value) : NaN;
+        nextSettings[definition.key] = Number.isFinite(parsedNumber) ? parsedNumber : definition.defaultValue;
+        break;
+      }
+    }
+  });
+
+  settings = sanitizeSettings(nextSettings);
+  applySettingsToControls();
+  persistAppData();
+}
+
+function restartPractice() {
+  recentKanaHistory = [];
+  rebuildQuestionPool();
+  showNextQuestion();
+}
+
+function initSettingsEventListeners() {
+  SETTING_DEFINITIONS.forEach(definition => {
+    const controls = definition.id
+      ? [document.getElementById(definition.id)].filter(Boolean)
+      : [...document.querySelectorAll(definition.selector)];
+
+    controls.forEach(control => {
+      control.addEventListener('change', () => {
+        readSettingsFromControls();
+        if (definition.restartsPractice) {
+          restartPractice();
+        }
+        if (typeof definition.afterChange === 'function') {
+          definition.afterChange();
+        }
+      });
+    });
+  });
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// 통계 화면
+// ─────────────────────────────────────────────────────────────
+function getAccuracyBackgroundColor(accuracy) {
+  if (accuracy === null) return '#eceef2';
+  const hue = Math.round(accuracy * 120); // 0 = 빨강, 120 = 초록
+  return `hsl(${hue} 70% 84%)`;
+}
+
+function sortItemsByAccuracyAscending(items) {
+  return [...items].sort((first, second) => {
+    const firstAccuracy = getAccuracy(getKanaStat(first.kana));
+    const secondAccuracy = getAccuracy(getKanaStat(second.kana));
+    if (firstAccuracy === null) return 1;
+    if (secondAccuracy === null) return -1;
+    return firstAccuracy - secondAccuracy
+      || getAttemptCount(getKanaStat(second.kana)) - getAttemptCount(getKanaStat(first.kana));
+  });
+}
+
+function renderKanaCell(item) {
+  const stat = getKanaStat(item.kana);
+  const attemptCount = getAttemptCount(stat);
+  const accuracy = getAccuracy(stat);
+  const dimmedClass = stat.ignored ? ' dimmed' : '';
+  const isWordOrSentence = item.type === 'word' || item.type === 'sentence';
+  const displayKana = formatDisplayKana(item, false);
+  const fontSize = isWordOrSentence && displayKana.length > 3 ? '16px' : (isWordOrSentence ? '20px' : '');
+  const subtitle = isWordOrSentence ? item.meaning : item.acceptedAnswers[0];
+  
+  let scoreText;
+  if (isWordOrSentence) {
+    const readAcc = attemptCount ? Math.round(stat.readingCorrect / attemptCount * 100) : 0;
+    const meanAcc = attemptCount ? Math.round(stat.meaningCorrect / attemptCount * 100) : 0;
+    scoreText = attemptCount ? `발음 ${readAcc}% 뜻 ${meanAcc}%` : '—';
+  } else {
+    scoreText = attemptCount ? `${stat.correct}/${attemptCount} · ${Math.round(accuracy * 100)}%` : '—';
+  }
+
+  return `<div class="kana-cell${dimmedClass}" style="background:${getAccuracyBackgroundColor(accuracy)}; ${isWordOrSentence ? 'min-width: 100px;' : ''}">
+    <div class="cell-btn ignore ${stat.ignored ? 'active' : ''}" onclick="window.toggleKanaState('${item.kana}', 'ignored', event)" title="숨기기">⊘</div>
+    <div class="cell-btn star ${stat.starred ? 'active' : ''}" onclick="window.toggleKanaState('${item.kana}', 'starred', event)" title="별표">★</div>
+    <div class="kana" style="${fontSize ? 'font-size: ' + fontSize + ';' : ''} white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${displayKana}">${displayKana}</div>
+    <div class="romaji" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${subtitle}">${subtitle}</div>
+    <div class="score">${scoreText}</div>
+  </div>`;
+}
+
+function renderStatsView() {
+  let allItems = [];
+  if (settings.learningTypes.includes('kana')) allItems = allItems.concat(ALL_KANA_ITEMS);
+  if (settings.learningTypes.includes('word')) allItems = allItems.concat(ALL_WORD_ITEMS);
+  if (settings.learningTypes.includes('sentence')) allItems = allItems.concat(ALL_SENTENCE_ITEMS);
+  
+  const attemptedItems = allItems.filter(item => getAttemptCount(getKanaStat(item.kana)) > 0);
+  const totalCorrect = attemptedItems.reduce((sum, item) => sum + getKanaStat(item.kana).correct, 0);
+  const totalAttempts = attemptedItems.reduce((sum, item) => sum + getAttemptCount(getKanaStat(item.kana)), 0);
+
+  document.getElementById('summaryAttempts').textContent = totalAttempts;
+  document.getElementById('summaryAccuracy').textContent =
+    totalAttempts ? `${Math.round(totalCorrect / totalAttempts * 100)}%` : '-';
+  const masteredItemsCount = allItems.filter(item => {
+    const stat = getKanaStat(item.kana);
+    return getAttemptCount(stat) > 0 || stat.ignored;
+  }).length;
+  document.getElementById('summaryLearned').textContent = `${masteredItemsCount} / ${allItems.length}`;
+  document.getElementById('summaryWeak').textContent = allItems.filter(isWeakItem).length;
+
+  const hasKana = settings.learningTypes.includes('kana');
+  document.getElementById('statsScriptRadioGroup').style.display = hasKana ? 'flex' : 'none';
+
+  const selectedScript = document.querySelector('input[name="statsScript"]:checked').value;
+  const sortOrder = document.getElementById('statsSortSelect').value;
+  
+  let gridHtml = '';
+  if (sortOrder === 'table') {
+    if (hasKana) {
+      const scriptItems = ALL_KANA_ITEMS.filter(item => item.script === selectedScript);
+      const groupMap = { 'basic': '기본(청음)', 'dakuon': '탁음', 'handakuon': '반탁음', 'yoon': '요음' };
+      for (const groupKey of ['basic', 'dakuon', 'handakuon', 'yoon']) {
+        const groupItems = scriptItems.filter(item => item.group === groupKey);
+        if (groupItems.length > 0) {
+          gridHtml += `<h3 class="group-title">낱글자 - ${groupMap[groupKey]}</h3><div class="kana-grid">${groupItems.map(renderKanaCell).join('')}</div>`;
+        }
+      }
+    }
+    const wordAndSentenceItems = allItems.filter(item => item.type === 'word' || item.type === 'sentence');
+    for (const category of Object.keys(WORD_CATEGORY_LABELS)) {
+      const categoryItems = wordAndSentenceItems.filter(item => item.category === category);
+      if (categoryItems.length > 0) {
+        gridHtml += `<h3 class="group-title">${WORD_CATEGORY_LABELS[category] || category}</h3>
+          <div class="kana-grid" style="grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));">${categoryItems.map(renderKanaCell).join('')}</div>`;
+      }
+    }
+  } else {
+    let sortedItems = [...allItems];
+    if (sortOrder === 'worst') sortedItems.sort((a, b) => getAccuracy(a) - getAccuracy(b));
+    if (sortOrder === 'recent') sortedItems.sort((a, b) => getKanaStat(b.kana).lastAttemptTime - getKanaStat(a.kana).lastAttemptTime);
+    gridHtml = `<div class="kana-grid" style="grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));">${sortedItems.map(renderKanaCell).join('')}</div>`;
+  }
+  
+  document.getElementById('statsGridContainer').innerHTML = gridHtml;
+
+  const weakItems = allItems.filter(isWeakItem).sort((a, b) => getAccuracy(a) - getAccuracy(b));
+  const weakestListContainer = document.getElementById('weakestListContainer');
+  
+  if (weakItems.length === 0) {
+    weakestListContainer.innerHTML = '<div class="empty-message">현재 기준에 해당하는 약점 항목이 없습니다.</div>';
+    return;
+  }
+  
+  const tableHeaderHtml = `<tr><th width="40%">항목</th><th width="30%">발음 정답률</th><th width="30%">뜻 정답률</th></tr>`;
+
+  let listHtml = `<table class="weakest">
+                    <thead>${tableHeaderHtml}</thead>
+                    <tbody>`;
+                    
+  weakItems.forEach(item => {
+    const stat = getKanaStat(item.kana);
+    const displayKana = formatDisplayKana(item, false);
+    
+    if (item.type === 'word' || item.type === 'sentence') {
+      const readingAcc = stat.readingCorrect + stat.readingWrong ? Math.round((stat.readingCorrect / (stat.readingCorrect + stat.readingWrong)) * 100) : 0;
+      const meaningAcc = stat.meaningCorrect + stat.meaningWrong ? Math.round((stat.meaningCorrect / (stat.meaningCorrect + stat.meaningWrong)) * 100) : 0;
+      
+      listHtml += `<tr>
+        <td class="kana" style="${item.kana.length > 5 ? 'font-size: 14px;' : 'font-size: 18px;'}">${displayKana}<br><span style="font-size:12px; color:var(--muted); font-family:var(--ui-font);">${item.meaning}</span></td>
+        <td><div class="stat-bar-bg"><div class="stat-bar-fill" style="width: ${readingAcc}%"></div></div><div style="text-align:right; font-size:11px; margin-top:2px;">${readingAcc}% (${stat.readingCorrect}/${stat.readingCorrect + stat.readingWrong})</div></td>
+        <td>${item.type === 'sentence' ? '-' : `<div class="stat-bar-bg"><div class="stat-bar-fill" style="width: ${meaningAcc}%"></div></div><div style="text-align:right; font-size:11px; margin-top:2px;">${meaningAcc}% (${stat.meaningCorrect}/${stat.meaningCorrect + stat.meaningWrong})</div>`}</td>
+      </tr>`;
+    } else {
+      const acc = Math.round(getAccuracy(item) * 100);
+      const romajiText = item.reading ? item.reading.romaji : (item.acceptedAnswers ? item.acceptedAnswers[0] : '');
+      listHtml += `<tr>
+        <td class="kana">${item.kana}<br><span style="font-size:12px; color:var(--muted); font-family:var(--ui-font);">${romajiText}</span></td>
+        <td><div class="stat-bar-bg"><div class="stat-bar-fill" style="width: ${acc}%"></div></div><div style="text-align:right; font-size:11px; margin-top:2px;">${acc}% (${stat.correct}/${stat.correct + stat.wrong})</div></td>
+        <td>-</td>
+      </tr>`;
+    }
+  });
+  listHtml += '</tbody></table>';
+  weakestListContainer.innerHTML = listHtml;
+}
+
+document.querySelectorAll('input[name="statsScript"]').forEach(radio => radio.addEventListener('change', renderStatsView));
+document.getElementById('statsSortSelect').addEventListener('change', renderStatsView);
+
+// 통계 화면의 약점 테스트: 현재 문자/범위 설정과 무관하게 학습 기록이 있는 모든 글자에서 약점을 고른다.
+document.getElementById('startWeakTestButton').addEventListener('click', () => {
+  if (settings.learningTypes.includes('word') || settings.learningTypes.includes('sentence')) {
+    settings = {
+      ...settings,
+      wordCategories: Object.keys(WORD_CATEGORY_LABELS),
+      mode: 'weak',
+    };
+  } else {
+    settings = {
+      ...settings,
+      scripts: Object.keys(SCRIPT_LABELS),
+      groups: Object.keys(HIRAGANA_TABLE),
+      mode: 'weak',
+    };
+  }
+  persistAppData();
+  applySettingsToControls();
+  switchView('practice');
+  restartPractice();
+});
+
+ 
+document.getElementById("resetStatsButton").addEventListener("click", () => {
+  if (!confirm('현재 선택된 유형(글자/단어/문장)의 통계를 모두 삭제할까요? 되돌릴 수 없습니다.')) return;
+
+  let itemsToRemove = [];
+  if (settings.learningTypes.includes('kana')) itemsToRemove = itemsToRemove.concat(ALL_KANA_ITEMS);
+  if (settings.learningTypes.includes('word')) itemsToRemove = itemsToRemove.concat(ALL_WORD_ITEMS);
+  if (settings.learningTypes.includes('sentence')) itemsToRemove = itemsToRemove.concat(ALL_SENTENCE_ITEMS);
+  
+  itemsToRemove.forEach(item => {
+    delete statsByKana[item.kana];
+  });
+  
+  persistAppData();
+  renderStatsView();
+  restartPractice();
+});
+
+// ─────────────────────────────────────────────────────────────
+// 파일 연결 (File System Access API)
+// ─────────────────────────────────────────────────────────────
+const storageStatusText = document.getElementById('storageStatusText');
+const reconnectPanel = document.getElementById('reconnectPanel');
+const quizCard = document.getElementById('quizCard');
+
+function updateStorageStatus(message, isError = false) {
+  storageStatusText.textContent = message;
+  storageStatusText.className = 'pool-size' + (isError ? ' storage-error' : '');
+  const globalStorageText = document.getElementById('globalStorageText');
+  if (globalStorageText) {
+    if (message.includes('브라우저 로컬 저장소') || message.includes('브라우저 저장소')) {
+      globalStorageText.innerHTML = `<span style="color:var(--wrong);">브라우저 임시 저장소 (파일 미연결)</span>`;
+    } else {
+      globalStorageText.innerHTML = `<span style="color:var(--correct);">${message}</span>`;
+    }
+  }
+}
+
+function renderConnectionState() {
+  const hasFSA = 'showOpenFilePicker' in window;
+  if (!hasFSA) {
+    updateStorageStatus('브라우저 저장소 (이 브라우저는 파일 연결을 지원하지 않음)');
+    document.querySelectorAll('.data-file-row button').forEach(b => b.classList.add('hidden'));
+    return;
+  }
+  document.getElementById('openDataFileButton').classList.toggle('hidden', !!connectedDataFileHandle);
+  document.getElementById('createDataFileButton').classList.toggle('hidden', !!connectedDataFileHandle);
+  document.getElementById('disconnectDataFileButton').classList.toggle('hidden', !connectedDataFileHandle);
+  if (connectedDataFileHandle) {
+    updateStorageStatus(`연결됨: ${connectedDataFileHandle.name}`);
+  } else {
+    updateStorageStatus('브라우저 저장소 (파일 연결 없음)');
+  }
+}
+
+async function verifyDataFilePermission(fileHandle) {
+  if (await fileHandle.queryPermission({ mode: 'readwrite' }) === 'granted') return true;
+  return await fileHandle.requestPermission({ mode: 'readwrite' }) === 'granted';
+}
+
+// ─────────────────────────────────────────────────────────────
+// 파일 핸들 영구 보관 (IndexedDB)
+// ─────────────────────────────────────────────────────────────
+const IDB_NAME = 'kanaTrainerDB';
+const IDB_STORE = 'handles';
+
+function openIDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(IDB_NAME, 1);
+    request.onupgradeneeded = event => event.target.result.createObjectStore(IDB_STORE);
+    request.onsuccess = event => resolve(event.target.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveFileHandleToIDB(fileHandle) {
+  try {
+    const db = await openIDB();
+    const transaction = db.transaction(IDB_STORE, 'readwrite');
+    transaction.objectStore(IDB_STORE).put(fileHandle, 'dataFileHandle');
+  } catch (error) { console.error('IDB 저장 실패', error); }
+}
+
+async function loadFileHandleFromIDB() {
+  try {
+    const db = await openIDB();
+    const transaction = db.transaction(IDB_STORE, 'readonly');
+    const request = transaction.objectStore(IDB_STORE).get('dataFileHandle');
+    return new Promise(resolve => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => resolve(null);
+    });
+  } catch { return null; }
+}
+
+async function deleteFileHandleFromIDB() {
+  try {
+    const db = await openIDB();
+    const transaction = db.transaction(IDB_STORE, 'readwrite');
+    transaction.objectStore(IDB_STORE).delete('dataFileHandle');
+  } catch {}
+}
+
+async function handleDataFileSelected(fileHandle) {
+  try {
+    const file = await fileHandle.getFile();
+    const text = await file.text();
+    applyDataFileText(text);
+    connectedDataFileHandle = fileHandle;
+    await saveFileHandleToIDB(fileHandle);
+    renderConnectionState();
+    applySettingsToControls();
+    restartPractice();
+    if (!document.getElementById('statsView').classList.contains('hidden')) renderStatsView();
+  } catch (error) {
+    updateStorageStatus(`파일 읽기 실패: ${error.message}`, true);
+  }
+}
+
+document.getElementById('openDataFileButton').addEventListener('click', async () => {
+  try {
+    const [fileHandle] = await window.showOpenFilePicker({
+      types: [{ description: 'JSON 파일', accept: { 'application/json': ['.json'] } }],
+      multiple: false
+    });
+    await handleDataFileSelected(fileHandle);
+  } catch (error) {
+    if (error.name !== 'AbortError') updateStorageStatus(`열기 오류: ${error.message}`, true);
+  }
+});
+
+document.getElementById('createDataFileButton').addEventListener('click', async () => {
+  try {
+    const fileHandle = await window.showSaveFilePicker({
+      suggestedName: 'kana-data.json',
+      types: [{ description: 'JSON 파일', accept: { 'application/json': ['.json'] } }],
+    });
+    connectedDataFileHandle = fileHandle;
+    await saveFileHandleToIDB(fileHandle);
+    renderConnectionState();
+    persistAppData(); // 현재 브라우저에 있는 데이터를 파일에 쓴다.
+  } catch (error) {
+    if (error.name !== 'AbortError') updateStorageStatus(`저장 오류: ${error.message}`, true);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// 초기화 및 권한 복구 로직
+// ─────────────────────────────────────────────────────────────
+document.getElementById('grantDataFilePermissionButton').addEventListener('click', async () => {
+  if (await verifyDataFilePermission(connectedDataFileHandle)) {
+    reconnectPanel.classList.add('hidden');
+    quizCard.classList.remove('hidden');
+    await handleDataFileSelected(connectedDataFileHandle);
+  }
+});
+
+document.getElementById('useBrowserStorageButton').addEventListener('click', async () => {
+  connectedDataFileHandle = null;
+  await deleteFileHandleFromIDB();
+  reconnectPanel.classList.add('hidden');
+  quizCard.classList.remove('hidden');
+  renderConnectionState();
+});
+
+document.getElementById('disconnectDataFileButton').addEventListener('click', async () => {
+  connectedDataFileHandle = null;
+  lastSyncedDataFileText = null;
+  await deleteFileHandleFromIDB();
+  renderConnectionState();
+});
+
+async function initStorage() {
+  const fileHandle = await loadFileHandleFromIDB();
+  if (fileHandle) {
+    connectedDataFileHandle = fileHandle;
+    document.getElementById('reconnectFileNameText').textContent = fileHandle.name;
+    updateStorageStatus(`연결 시도 중: ${fileHandle.name}`);
+    
+    let hasPermission = await fileHandle.queryPermission({ mode: 'readwrite' }) === 'granted';
+    if (!hasPermission) {
+      try {
+        hasPermission = await fileHandle.requestPermission({ mode: 'readwrite' }) === 'granted';
+      } catch (e) {
+        // 브라우저에 따라 user gesture 없이 호출 시 SecurityError 발생 가능
+      }
+    }
+    
+    if (hasPermission) {
+      await handleDataFileSelected(fileHandle);
+    } else {
+      reconnectPanel.classList.remove('hidden');
+      quizCard.classList.add('hidden');
+    }
+  }
+  renderConnectionState();
+}
+
+// ─────────────────────────────────────────────────────────────
+// 화면 전환 및 초기화
+// ─────────────────────────────────────────────────────────────
+function switchView(viewName) {
+  const isPractice = viewName === 'practice';
+  document.getElementById('practiceView').classList.toggle('hidden', !isPractice);
+  document.getElementById('statsView').classList.toggle('hidden', isPractice);
+  document.getElementById('navPractice').classList.toggle('active', isPractice);
+  document.getElementById('navStats').classList.toggle('active', !isPractice);
+  if (isPractice) answerInput.focus(); else renderStatsView();
+}
+document.getElementById('navPractice').addEventListener('click', () => switchView('practice'));
+document.getElementById('navStats').addEventListener('click', () => switchView('stats'));
+
+initStorage();
+initSettingsEventListeners();
+applySettingsToControls();
+restartPractice();
+</script>
+
+</body>
+</html>
