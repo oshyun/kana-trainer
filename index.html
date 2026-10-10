@@ -576,7 +576,7 @@
       <!-- 재연결 권한 요청 패널 -->
       <div id="reconnectPanel" class="panel hidden" style="text-align: center; margin-bottom: 0; padding: 16px;">
         <h3 style="margin-top: 0; font-size: 14px;">이전에 연결된 파일이 있습니다</h3>
-        <p style="color: var(--muted); font-size: 12px; margin: 8px 0 12px 0;">브라우저 보안상 재연결 권한이 필요합니다.</p>
+        <p style="color: var(--muted); font-size: 12px; margin: 8px 0 12px 0;"><strong id="reconnectFileNameText" style="color: var(--text);"></strong> 파일에 대한 재연결 권한이 필요합니다.</p>
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <button id="grantDataFilePermissionButton" class="primary" style="font-size: 12px;">권한 부여 및 연결</button>
           <button id="useBrowserStorageButton" class="btn" style="font-size: 12px;">연결 취소</button>
@@ -2272,7 +2272,10 @@ async function initStorage() {
   const fileHandle = await loadFileHandleFromIDB();
   if (fileHandle) {
     connectedDataFileHandle = fileHandle;
-    document.getElementById('reconnectFileNameText').textContent = fileHandle.name;
+    const reconnectFileNameElement = document.getElementById('reconnectFileNameText');
+    if (reconnectFileNameElement) {
+      reconnectFileNameElement.textContent = fileHandle.name;
+    }
     updateStorageStatus(`연결 시도 중: ${fileHandle.name}`);
     
     let hasPermission = await fileHandle.queryPermission({ mode: 'readwrite' }) === 'granted';
