@@ -511,5 +511,85 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "nin"
+  },
+  {
+    "kana": "わたし",
+    "kanaSpaced": "わたし",
+    "meaning": "나·저 (1인칭 표준)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "pronoun"
+  },
+  {
+    "kana": "あなた",
+    "kanaSpaced": "あなた",
+    "meaning": "당신·너 (2인칭)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "pronoun"
+  },
+  {
+    "kana": "なまえ",
+    "kanaSpaced": "なまえ",
+    "meaning": "이름",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "pronoun"
+  },
+  {
+    "kana": "おなまえは",
+    "kanaSpaced": "おなまえは",
+    "meaning": "성함은요? (이름을 물을 때 가장 흔히 씀)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "pronoun"
+  },
+  {
+    "kana": "おなまえはなんですか",
+    "kanaSpaced": "おなまえは なんですか",
+    "meaning": "이름이 어떻게 되시나요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "pronoun"
+  },
+  {
+    "kana": "だれ",
+    "kanaSpaced": "だれ",
+    "meaning": "누구 (Who)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "5w"
+  },
+  {
+    "kana": "いつ",
+    "kanaSpaced": "いつ",
+    "meaning": "언제 (When)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "5w"
+  },
+  {
+    "kana": "どこ",
+    "kanaSpaced": "どこ",
+    "meaning": "어디 (Where)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "5w"
+  },
+  {
+    "kana": "なんで",
+    "kanaSpaced": "なんで",
+    "meaning": "왜 (Why·일상 구어)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "5w"
+  },
+  {
+    "kana": "どうして",
+    "kanaSpaced": "どうして",
+    "meaning": "왜·어째서 (Why·부드러운 표현)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "5w"
   }
 ];
