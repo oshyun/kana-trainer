@@ -192,5 +192,13 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "doko"
+  },
+  {
+    "kana": "こんにちは",
+    "kanaSpaced": "こんにちは",
+    "meaning": "안녕하세요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "aisatsu"
   }
 ];
