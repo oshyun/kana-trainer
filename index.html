@@ -1175,35 +1175,32 @@ function rebuildQuestionPool() {
     `출제 대상: ${questionPool.length}개 (${modeDescription})`;
 }
 
-// 미학습 글자와 오답률 높은 글자에 아주 약간의 가중치만 두어 훨씬 무작위에 가깝게 만든다.
-function getSelectionWeight(item) {
-  const stat = getKanaStat(item.kana);
-  const attemptCount = getAttemptCount(stat);
-  let weight = 1.0;
-  
-  if (attemptCount === 0) {
-    weight = 1.5;
-  } else {
-    const accuracy = stat.correct / attemptCount;
-    // 정답률이 높을수록 1.0에 가깝고, 전부 오답일 경우 최대 2.0 (격차 2배)
-    weight = 1.0 + (1 - accuracy);
-  }
-  
-  // 별표(관심 항목)로 지정된 글자는 노출 빈도를 4배로 대폭 높인다.
-  if (stat.starred) {
-    weight *= 4.0;
-  }
-  
-  return weight;
-}
-
+// 출제 횟수가 적은 문제를 우선 출제하기 위해, 후보군 내 출제 횟수를 Min-Max 표준화하여 100배(최소 출제) ~ 1배(최대 출제)로 가중치를 부여한다.
 function pickNextItem() {
   const excludedCount = Math.min(RECENT_HISTORY_LENGTH, questionPool.length - 1);
   const excludedKana = recentKanaHistory.slice(-excludedCount);
   const candidates = excludedCount > 0
     ? questionPool.filter(item => !excludedKana.includes(item.kana))
     : questionPool;
-  const weights = candidates.map(getSelectionWeight);
+
+  const attemptCounts = candidates.map(item => getAttemptCount(getKanaStat(item.kana)));
+  const minimumAttempts = Math.min(...attemptCounts);
+  const maximumAttempts = Math.max(...attemptCounts);
+  const attemptsDifference = maximumAttempts - minimumAttempts;
+
+  const weights = candidates.map((item, index) => {
+    let weight = 100;
+    if (attemptsDifference > 0) {
+      const normalizedRatio = (attemptCounts[index] - minimumAttempts) / attemptsDifference;
+      weight = 1 + (1 - normalizedRatio) * 99; // 최소 출제 100배 ~ 최대 출제 1배
+    }
+    const stat = getKanaStat(item.kana);
+    if (stat.starred) {
+      weight *= 2;
+    }
+    return weight;
+  });
+
   const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
   let randomPoint = Math.random() * totalWeight;
   for (let index = 0; index < candidates.length; index++) {
