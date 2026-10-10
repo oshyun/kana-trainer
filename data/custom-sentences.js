@@ -136,5 +136,13 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "ii-dame"
+  },
+  {
+    "kana": "おねがいします",
+    "kanaSpaced": "おねがい します",
+    "meaning": "부탁합니다",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "onegai"
   }
 ];
