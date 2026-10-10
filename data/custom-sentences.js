@@ -439,5 +439,21 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "nan"
+  },
+  {
+    "kana": "これなんかいにありますか",
+    "kanaSpaced": "これ なんかいに ありますか",
+    "meaning": "이거 몇 층에 있어요 (に: ~에)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
+  },
+  {
+    "kana": "これなんかいありますか",
+    "kanaSpaced": "これ なんかい ありますか",
+    "meaning": "이거 몇 층 있어요 (조사 に 생략 구어)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kai"
   }
 ];
