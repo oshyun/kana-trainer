@@ -608,14 +608,16 @@ const HIRAGANA_TABLE = {
     ['ら','ra','라'],['り','ri','리'],['る','ru','루'],['れ','re','레'],['ろ','ro','로'],
     ['わ','wa','와'],['を','wo','o','오','워'],['ん','n','nn','응','은','ㄴ','ㅇ'],
   ],
-  voiced: [
+  dakuon: [
     ['が','ga','가'],['ぎ','gi','기'],['ぐ','gu','구'],['げ','ge','게'],['ご','go','고'],
     ['ざ','za','자'],['じ','ji','zi','지'],['ず','zu','즈','주'],['ぜ','ze','제'],['ぞ','zo','조'],
     ['だ','da','다'],['ぢ','ji','di','지'],['づ','zu','du','즈','주'],['で','de','데'],['ど','do','도'],
     ['ば','ba','바'],['び','bi','비'],['ぶ','bu','부'],['べ','be','베'],['ぼ','bo','보'],
+  ],
+  handakuon: [
     ['ぱ','pa','파'],['ぴ','pi','피'],['ぷ','pu','푸'],['ぺ','pe','페'],['ぽ','po','포'],
   ],
-  combination: [
+  yoon: [
     ['きゃ','kya','캬'],['きゅ','kyu','큐'],['きょ','kyo','쿄'],
     ['しゃ','sha','sya','샤'],['しゅ','shu','syu','슈'],['しょ','sho','syo','쇼'],
     ['ちゃ','cha','tya','cya','차','챠'],['ちゅ','chu','tyu','cyu','추','츄'],['ちょ','cho','tyo','cyo','초','쵸'],
@@ -629,7 +631,7 @@ const HIRAGANA_TABLE = {
     ['ぴゃ','pya','퍄'],['ぴゅ','pyu','퓨'],['ぴょ','pyo','표'],
   ],
 };
-const GROUP_LABELS = { basic: '기본', voiced: '탁음·반탁음', combination: '요음' };
+const GROUP_LABELS = { basic: '기본(청음)', dakuon: '탁음', handakuon: '반탁음', yoon: '요음' };
 const SCRIPT_LABELS = { hiragana: '히라가나', katakana: '카타카나' };
 const HIRAGANA_TO_KATAKANA_OFFSET = 0x60;
 
@@ -917,21 +919,17 @@ function sanitizeSettings(targetSettings = settings) {
     });
   }
 
-  if (!targetSettings.learningTypes || targetSettings.learningTypes.length === 0) {
-    targetSettings.learningTypes = ['kana'];
+  if (!Array.isArray(targetSettings.learningTypes)) {
+    targetSettings.learningTypes = [];
   }
-  if (targetSettings.learningTypes.includes('kana')) {
-    if (!targetSettings.groups || targetSettings.groups.length === 0) {
-      targetSettings.groups = ['basic'];
-    }
-    if (!targetSettings.scripts || targetSettings.scripts.length === 0) {
-      targetSettings.scripts = ['hiragana'];
-    }
+  if (!Array.isArray(targetSettings.groups)) {
+    targetSettings.groups = [];
   }
-  if (targetSettings.learningTypes.includes('word')) {
-    if (!targetSettings.wordCategories || targetSettings.wordCategories.length === 0) {
-      targetSettings.wordCategories = ['n5'];
-    }
+  if (!Array.isArray(targetSettings.scripts)) {
+    targetSettings.scripts = [];
+  }
+  if (!Array.isArray(targetSettings.wordCategories)) {
+    targetSettings.wordCategories = [];
   }
   return targetSettings;
 }
