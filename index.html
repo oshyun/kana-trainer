@@ -122,8 +122,10 @@
   .feedback.correct { color: var(--correct); }
   .feedback.wrong { color: var(--wrong); }
   .hint { color: var(--muted); font-size: 13px; margin-top: 6px; }
-  .reference-area { display: flex; gap: 16px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .reference-area { display: flex; gap: 16px; justify-content: center; margin-top: 16px; flex-wrap: wrap; width: 100%; }
   .ref-panel { background: var(--background); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; flex: 1; max-width: 380px; }
+  .ref-panel.full-width,
+  .reference-area:has(#inputRefPanel.hidden) #targetRefPanel { max-width: 100%; width: 100%; }
   .ref-panel.correct-box { background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.4); }
   .ref-panel.wrong-box { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.4); }
   .ref-panel.search-box { background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.4); }
@@ -1328,7 +1330,7 @@ function renderReferencePanels(isCorrect, typedAnswer, typedMeaning, isReadingCo
   refArea.classList.remove('hidden');
   
   if (currentItem.type === 'word' || currentItem.type === 'sentence') {
-    targetPanel.className = 'ref-panel ' + (isCorrect ? 'correct-box' : 'wrong-box');
+    targetPanel.className = 'ref-panel full-width ' + (isCorrect ? 'correct-box' : 'wrong-box');
     const isSpacingEnabled = currentItem.category === 'custom' ? settings.customSentenceSpacing : settings.sentenceSpacing;
     const romajiAnswer = (isSpacingEnabled && currentItem.reading.romajiSpaced) ? currentItem.reading.romajiSpaced : currentItem.reading.romaji;
     const hangulAnswer = (isSpacingEnabled && currentItem.reading.hangulSpaced) ? currentItem.reading.hangulSpaced : currentItem.reading.hangul;
@@ -1355,16 +1357,18 @@ function renderReferencePanels(isCorrect, typedAnswer, typedMeaning, isReadingCo
           const isCurrent = item.kana === currentItem.kana;
           const itemSpacingEnabled = item.category === 'custom' ? settings.customSentenceSpacing : settings.sentenceSpacing;
           const itemHangul = (itemSpacingEnabled && item.reading && item.reading.hangulSpaced) ? item.reading.hangulSpaced : (item.reading ? item.reading.hangul : '');
-          const badgeHtml = isCurrent ? `<span style="font-size: 11px; background: var(--accent); color: white; padding: 1px 5px; border-radius: 4px; margin-left: 6px; font-weight: 600;">현재 문제</span>` : '';
+          const badgeHtml = isCurrent ? `<span style="font-size: 11px; background: var(--accent); color: white; padding: 1px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; display: inline-block;">현재 문제</span>` : '';
           const activeStyle = isCurrent ? 'font-weight: 700; color: var(--accent);' : 'color: var(--text);';
-          return `<li style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; padding: 5px 8px; margin-bottom: 4px; border-radius: 6px; background: rgba(0, 0, 0, 0.03); font-size: 13.5px;">
-            <div style="${activeStyle}">
+          return `<li style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px 12px; padding: 7px 10px; margin-bottom: 5px; border-radius: 6px; background: rgba(0, 0, 0, 0.03); font-size: 13.5px;">
+            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; ${activeStyle}">
               <span>${item.kana}</span>
-              <span style="font-size: 12px; color: var(--muted); margin-left: 4px;">(${itemHangul})</span>
-              ${badgeHtml}
-              <button onclick="window.speakText('${item.kana}')" style="background:none; border:none; font-size:14px; cursor:pointer; vertical-align:middle; padding:0 2px;" title="발음 듣기">🔊</button>
+              <span style="font-size: 12px; color: var(--muted); font-weight: normal;">(${itemHangul})</span>
+              <span style="display: inline-flex; align-items: center; gap: 2px; white-space: nowrap;">
+                ${badgeHtml}
+                <button onclick="window.speakText('${item.kana}')" style="background:none; border:none; font-size:14px; cursor:pointer; vertical-align:middle; padding:0 2px;" title="발음 듣기">🔊</button>
+              </span>
             </div>
-            <div style="color: var(--muted); font-size: 12.5px;">${item.meaning}</div>
+            <div style="color: var(--muted); font-size: 12.5px; word-break: keep-all;">${item.meaning}</div>
           </li>`;
         }).join('');
 
@@ -1378,7 +1382,7 @@ function renderReferencePanels(isCorrect, typedAnswer, typedMeaning, isReadingCo
     }
     
     targetPanel.innerHTML = `<div class="ref-title">정답</div>
-      <div style="text-align:center; padding: 10px; font-size: 16px;">
+      <div style="text-align:center; padding: 10px; font-size: 16px; word-break: keep-all;">
         <div style="${readingColor}">발음: ${readingIcon}<b>${hangulAnswer}</b> (${romajiAnswer}) <button onclick="window.speakText('${currentItem.kana}')" style="background:none; border:none; font-size:18px; cursor:pointer; vertical-align:middle; padding:0 4px;" title="발음 듣기">🔊</button></div>
         <div style="margin-top: 8px; ${meaningColor}">뜻: ${meaningIcon}<b>${currentItem.meaning}</b></div>
         ${relatedHtml}
@@ -1565,7 +1569,8 @@ window.overrideAsCorrect = function(kana, wasReadingWrong, wasMeaningWrong) {
   
   const targetPanel = document.getElementById('targetRefPanel');
   if (targetPanel) {
-    targetPanel.className = 'ref-panel correct-box';
+    const isWordOrSentence = currentItem.type === 'word' || currentItem.type === 'sentence';
+    targetPanel.className = 'ref-panel' + (isWordOrSentence ? ' full-width' : '') + ' correct-box';
     const btnHtml = `<div style="text-align:center; margin-top: 10px;"><button`;
     targetPanel.innerHTML = targetPanel.innerHTML.split(btnHtml)[0]; // 버튼 제거
   }
@@ -1600,7 +1605,7 @@ window.overrideAsWrong = function(kana, wasReadingCorrect, wasMeaningCorrect) {
   
   const targetPanel = document.getElementById('targetRefPanel');
   if (targetPanel) {
-    targetPanel.className = 'ref-panel wrong-box';
+    targetPanel.className = 'ref-panel' + (isWordOrSentence ? ' full-width' : '') + ' wrong-box';
     const btnHtml = `<div style="text-align:center; margin-top: 10px;"><button`;
     targetPanel.innerHTML = targetPanel.innerHTML.split(btnHtml)[0]; // 버튼 제거
   }
