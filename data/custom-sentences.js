@@ -184,5 +184,13 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "doko"
+  },
+  {
+    "kana": "これはどこにありますか",
+    "kanaSpaced": "これは どこに ありますか",
+    "meaning": "이거 어디에 있어요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "doko"
   }
 ];
