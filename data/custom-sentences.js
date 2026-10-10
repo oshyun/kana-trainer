@@ -455,5 +455,61 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "kai"
+  },
+  {
+    "kana": "ひとり",
+    "kanaSpaced": "ひとり",
+    "meaning": "한 명·혼자 (불규칙 발음)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nin"
+  },
+  {
+    "kana": "ふたり",
+    "kanaSpaced": "ふたり",
+    "meaning": "두 명·둘 (불규칙 발음)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nin"
+  },
+  {
+    "kana": "さんにん",
+    "kanaSpaced": "さんにん",
+    "meaning": "세 명 (3명부터 にん)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nin"
+  },
+  {
+    "kana": "よにん",
+    "kanaSpaced": "よにん",
+    "meaning": "네 명 (よにん 발음 주의)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nin"
+  },
+  {
+    "kana": "ひとりです",
+    "kanaSpaced": "ひとりです",
+    "meaning": "혼자예요·한 명입니다 (식당 입장 필수)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nin"
+  },
+  {
+    "kana": "ふたりです",
+    "kanaSpaced": "ふたりです",
+    "meaning": "둘이에요·두 명입니다 (식당 입장 필수)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nin"
+  },
+  {
+    "kana": "なんにんですか",
+    "kanaSpaced": "なんにんですか",
+    "meaning": "몇 명인가요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nin"
   }
 ];
