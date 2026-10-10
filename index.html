@@ -552,6 +552,26 @@ for (const script of ['hiragana', 'katakana']) {
 }
 
 const KANA_READING_TABLE = buildKanaReadingTable(HIRAGANA_TABLE);
+function showDataLoadingError(datasetTitle, itemIdentifier, error) {
+  const errorMessage = `[데이터 로드 오류] ${datasetTitle} "${itemIdentifier}": ${error.message}`;
+  console.error(errorMessage, error);
+
+  const displayError = () => {
+    const errorBanner = document.createElement('div');
+    errorBanner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#dc2626;color:white;padding:14px 20px;font-weight:600;font-size:14px;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;justify-content:space-between;align-items:center;line-height:1.4;';
+    errorBanner.innerHTML = `<span>⚠️ <b>${datasetTitle} 데이터 오류:</b> "${itemIdentifier}" 발음 파싱에 실패했습니다.<br><small style="font-weight:normal;opacity:0.9;">${error.message}</small></span><button onclick="this.parentElement.remove()" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;padding:0 8px;line-height:1;">✕</button>`;
+    if (document.body) {
+      document.body.prepend(errorBanner);
+    }
+  };
+
+  if (document.body) {
+    displayError();
+  } else {
+    window.addEventListener('DOMContentLoaded', displayError);
+  }
+}
+
 const ALL_WORD_ITEMS = [];
 
 for (const [category, textBlock] of Object.entries(WORD_LIST_BY_CATEGORY)) {
@@ -562,39 +582,58 @@ for (const [category, textBlock] of Object.entries(WORD_LIST_BY_CATEGORY)) {
     if (parts.length >= 2) {
       const word = parts[0];
       const meaning = parts.slice(1).join(' ');
-      
+
       // 한 글자는 가나 모드 통계와 겹칠 수 있고 단어로 연습하기엔 짧으므로 생략
       if (word.length <= 1) continue;
-      
-      const reading = buildWordReading(word, KANA_READING_TABLE);
-      if (reading) {
-        // 이미 다른 카테고리에서 추가된 단어인지 확인
-        if (!ALL_WORD_ITEMS.some(item => item.kana === word)) {
-          ALL_WORD_ITEMS.push({
-            kana: word,
-            meaning: meaning,
-            reading: reading,
-            category: category,
-            type: 'word'
-          });
-        }
+
+      let reading;
+      try {
+        reading = buildWordReading(word, KANA_READING_TABLE);
+      } catch (error) {
+        showDataLoadingError(`단어 (${category})`, word, error);
+        throw error;
+      }
+
+      // 이미 다른 카테고리에서 추가된 단어인지 확인
+      if (!ALL_WORD_ITEMS.some(item => item.kana === word)) {
+        ALL_WORD_ITEMS.push({
+          kana: word,
+          meaning: meaning,
+          reading: reading,
+          category: category,
+          type: 'word'
+        });
       }
     }
   }
 }
 
 const ALL_SENTENCE_ITEMS = RAW_SENTENCES.map(item => {
+  let reading;
+  try {
+    reading = buildSentenceReading(item, KANA_READING_TABLE);
+  } catch (error) {
+    showDataLoadingError('기본 문장', item.kana, error);
+    throw error;
+  }
   return {
     ...item,
-    reading: buildSentenceReading(item, KANA_READING_TABLE),
+    reading,
     acceptedAnswers: []
   };
 });
 
 const ALL_CUSTOM_SENTENCE_ITEMS = (typeof RAW_CUSTOM_SENTENCES !== 'undefined' ? RAW_CUSTOM_SENTENCES : []).map(item => {
+  let reading;
+  try {
+    reading = buildSentenceReading(item, KANA_READING_TABLE);
+  } catch (error) {
+    showDataLoadingError('커스텀 문장', item.kana, error);
+    throw error;
+  }
   return {
     ...item,
-    reading: buildSentenceReading(item, KANA_READING_TABLE),
+    reading,
     acceptedAnswers: []
   };
 });

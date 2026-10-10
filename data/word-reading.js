@@ -79,7 +79,7 @@ function unique(values) {
   return [...new Set(values)];
 }
 
-// 단어를 읽기 단위로 쪼갠다. 변환할 수 없는 글자가 있으면 null.
+// 단어를 읽기 단위로 쪼갠다. 변환할 수 없는 글자가 있으면 즉시 Error 발생 (Fail-Fast).
 function splitWordIntoUnits(word, readingTable) {
   const characters = [...word];
   const units = [];
@@ -97,7 +97,11 @@ function splitWordIntoUnits(word, readingTable) {
     else if (hiragana === 'ー') units.push({ kana, type: 'long' });
     else if (hiragana === 'ん') units.push({ kana, type: 'n' });
     else if (readingTable.has(hiragana)) units.push({ kana, type: 'kana', ...readingTable.get(hiragana) });
-    else return null;
+    else {
+      const invalidCharacter = characters[index];
+      const characterCode = invalidCharacter.charCodeAt(0).toString(16).toUpperCase();
+      throw new Error(`[KanaTrainer] 발음 변환 실패: '${word}'에 유효하지 않은 문자 '${invalidCharacter}' (U+${characterCode})가 포함되어 있습니다. (위치: ${index + 1}번째 글자)`);
+    }
     index += 1;
   }
   return units;
@@ -149,10 +153,12 @@ function buildDisplayHangul(units) {
   return syllables.join('');
 }
 
-// 단어 → { units, romaji, hangul }. 변환할 수 없으면 null.
+// 단어 → { units, romaji, hangul }. 유효하지 않은 입력이면 즉시 Error 발생 (Fail-Fast).
 function buildWordReading(word, readingTable) {
+  if (typeof word !== 'string' || word.length === 0) {
+    throw new Error(`[KanaTrainer] 발음 변환 실패: 유효하지 않은 입력입니다: ${JSON.stringify(word)}`);
+  }
   const units = splitWordIntoUnits(word, readingTable);
-  if (!units) return null;
   fillUnitReadings(units);
   return {
     units,
@@ -163,7 +169,9 @@ function buildWordReading(word, readingTable) {
 
 // 문장 → { units, romaji, hangul, romajiSpaced, hangulSpaced }. 조사 は('와/wa') 자동 보정 및 수동 오버라이드 지원.
 function buildSentenceReading(sentenceItem, readingTable) {
-  if (!sentenceItem) return null;
+  if (!sentenceItem || typeof sentenceItem !== 'object') {
+    throw new Error(`[KanaTrainer] 문장 발음 변환 실패: 유효하지 않은 문장 아이템입니다: ${JSON.stringify(sentenceItem)}`);
+  }
 
   // 1. 객체 단위 완전 오버라이드가 제공된 경우
   if (sentenceItem.reading && typeof sentenceItem.reading === 'object' && sentenceItem.reading.units) {
@@ -171,13 +179,18 @@ function buildSentenceReading(sentenceItem, readingTable) {
   }
 
   const rawKanaText = sentenceItem.kana || '';
+  if (!rawKanaText) {
+    throw new Error(`[KanaTrainer] 문장 발음 변환 실패: kana 속성이 비어 있습니다: ${JSON.stringify(sentenceItem)}`);
+  }
+  if (/\s/.test(rawKanaText)) {
+    throw new Error(`[KanaTrainer] 문장 데이터 규격 위반: kana 속성에 공백이 포함되어 있습니다. kana는 공백 없이 작성하고, 띄어쓰기는 kanaSpaced에 작성해야 합니다: '${rawKanaText}'`);
+  }
   const spacedKanaText = sentenceItem.kanaSpaced || sentenceItem.kana || '';
   const tokens = spacedKanaText.trim().split(/[\s　]+/).filter(Boolean);
 
   const tokenReadings = [];
   for (const token of tokens) {
     const units = splitWordIntoUnits(token, readingTable);
-    if (!units) return buildWordReading(rawKanaText, readingTable);
     fillUnitReadings(units);
 
     // 어절 끝에 위치한 조사 は 및 인사말(こんにちは, こんばんは) 발음 보정:
@@ -241,6 +254,9 @@ function matchesAllUnits(input, optionLists) {
 
 // typedAnswer 는 이미 소문자·공백 제거된 값. 장음 기호(-, ー, ~)와 아포스트로피는 무시한다.
 function isWordReadingCorrect(reading, typedAnswer) {
+  if (!reading || !Array.isArray(reading.units)) {
+    throw new Error('[KanaTrainer] isWordReadingCorrect 호출 계약 위반: reading 객체 또는 reading.units가 유효하지 않습니다.');
+  }
   const cleanedAnswer = typedAnswer.replace(/[-ー~'’]/g, '');
   if (!cleanedAnswer) return false;
   if (HANGUL_PATTERN.test(cleanedAnswer)) {
