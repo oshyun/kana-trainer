@@ -144,5 +144,29 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "onegai"
+  },
+  {
+    "kana": "おかいけい おねがいします",
+    "kanaSpaced": "おかいけい おねがい します",
+    "meaning": "계산 부탁합니다",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kaikei"
+  },
+  {
+    "kana": "ください",
+    "kanaSpaced": "ください",
+    "meaning": "주세요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kudasai"
+  },
+  {
+    "kana": "いいえ",
+    "kanaSpaced": "いいえ",
+    "meaning": "아니요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "hai-iie"
   }
 ];
