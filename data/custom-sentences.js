@@ -224,5 +224,13 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "kore-kudasai"
+  },
+  {
+    "kana": "これとこれでおねがいします",
+    "kanaSpaced": "これと これで おねがい します",
+    "meaning": "이것과 이것으로 부탁합니다 (と: ~와/과·and / で: ~(으)로)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kore-kudasai"
   }
 ];
