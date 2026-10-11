@@ -623,5 +623,37 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "tax"
+  },
+  {
+    "kana": "これ",
+    "kanaSpaced": "これ",
+    "meaning": "이거·이것 (가까운 것)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kosoado"
+  },
+  {
+    "kana": "それ",
+    "kanaSpaced": "それ",
+    "meaning": "그거·그것 (상대방 쪽)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kosoado"
+  },
+  {
+    "kana": "あれ",
+    "kanaSpaced": "あれ",
+    "meaning": "저거·저것 (멀리 있는 것)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kosoado"
+  },
+  {
+    "kana": "どれ",
+    "kanaSpaced": "どれ",
+    "meaning": "어느 것·어느 거 (의문사)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "kosoado"
   }
 ];
