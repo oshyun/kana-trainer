@@ -655,5 +655,37 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "kosoado"
+  },
+  {
+    "kana": "どうしてですか",
+    "kanaSpaced": "どうしてですか",
+    "meaning": "왜요? (Why·존댓말)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "5w"
+  },
+  {
+    "kana": "なにが",
+    "kanaSpaced": "なにが",
+    "meaning": "뭐가? (What·반말)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nan"
+  },
+  {
+    "kana": "なにがですか",
+    "kanaSpaced": "なにが ですか",
+    "meaning": "무엇이요? (What·존댓말)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "nan"
+  },
+  {
+    "kana": "どう",
+    "kanaSpaced": "どう",
+    "meaning": "어떻게·어때 (How)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "5w"
   }
 ];
