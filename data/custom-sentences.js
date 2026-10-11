@@ -591,5 +591,37 @@ const RAW_CUSTOM_SENTENCES = [
     "type": "sentence",
     "category": "custom",
     "relatedGroup": "5w"
+  },
+  {
+    "kana": "ぜいこみ",
+    "kanaSpaced": "ぜいこみ",
+    "meaning": "세금 포함 (소비세 포함·세입)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "tax"
+  },
+  {
+    "kana": "ぜいぬき",
+    "kanaSpaced": "ぜいぬき",
+    "meaning": "세금 별도 (세전 가격)",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "tax"
+  },
+  {
+    "kana": "ぜいこみですか",
+    "kanaSpaced": "ぜいこみ ですか",
+    "meaning": "세금 포함인가요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "tax"
+  },
+  {
+    "kana": "ぜいこみでいくらですか",
+    "kanaSpaced": "ぜいこみで いくら ですか",
+    "meaning": "세금 포함해서 얼마인가요",
+    "type": "sentence",
+    "category": "custom",
+    "relatedGroup": "tax"
   }
 ];
